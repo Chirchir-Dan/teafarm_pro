@@ -1,0 +1,200 @@
+/* General form styles */
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+form h2 {
+    text-align: center;
+    color: #568203;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus,
+.form-group input[type="date"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #568203;
+    outline: none;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group select {
+    height: 40px;
+}
+
+.form-group .error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Button styles */
+.button-group {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.button-group button,
+.button-group .btn-primary,
+.button-group .btn-secondary {
+    background-color: #568203;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.button-group button:hover,
+.button-group .btn-primary:hover,
+.button-group .btn-secondary:hover {
+    background-color: #466602;
+    transform: scale(1.05);
+}
+
+.button-group button:disabled,
+.button-group .btn-primary:disabled,
+.button-group .btn-secondary:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.button-group .secondary-button {
+    background-color: #ccc;
+    color: #333;
+    margin-left: 10px;
+}
+
+.button-group .secondary-button:hover {
+    background-color: #bbb;
+}
+
+.form-footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.form-footer a {
+    color: #568203;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.form-footer a:hover {
+    color: #466602;
+}
+
+/* Table styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.table th {
+    background-color: #568203;
+    color: white;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.table tr:hover {
+    background-color: #ddd;
+}
+
+.table a {
+    text-decoration: none;
+    color: #568203;
+}
+
+.table a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    form {
+        padding: 15px;
+    }
+    
+    .button-group button {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .button-group .secondary-button {
+        margin-left: 0;
+    }
+}
+
+/* In dashboard.css or forms.css */
+.container {
+    padding: 20px;
+}
+
+.total-weight {
+    font-weight: bold;
+    color: #333;
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.summary-table th, .summary-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.summary-table th {
+    background-color: #f2f2f2;
+}

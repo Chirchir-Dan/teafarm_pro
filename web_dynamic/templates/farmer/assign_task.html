@@ -1,0 +1,29 @@
+{% extends 'shared/base.html' %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Assign Task</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                <label for="labour_types">{{ form.labour_types.label }}</label>
+                {{ form.labour_types(class="form-control") }}
+            </div>
+
+            <div class="form-group">
+                <label for="employee">{{ form.employee.label }}</label>
+                {{ form.employee(class="form-control") }}
+            </div>
+            
+            <div class="form-group">
+                <label for="due_date">{{ form.due_date.label }}</label>
+                {{ form.due_date(class="form-control") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.submit(class="btn btn-success") }}
+            </div>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'shared/base.html' %}
+
+{% block content %}
+<!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+<div class="container mt-4">
+    <h2>Add Employee</h2>
+    <form method="POST" action="{{ url_for('farmer_bp.employees') }}">
+        {{ add_form.hidden_tag() }}
+        <div class="form-group">
+            {{ add_form.name.label(class="form-label") }}
+            {{ add_form.name(class="form-control") }}
+            {% if add_form.name.errors %}
+                <div class="text-danger">{{ add_form.name.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ add_form.phone_number.label(class="form-label") }}
+            {{ add_form.phone_number(class="form-control") }}
+            {% if add_form.phone_number.errors %}
+                <div class="text-danger">{{ add_form.phone_number.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ add_form.email.label(class="form-label") }}
+            {{ add_form.email(class="form-control") }}
+            {% if add_form.email.errors %}
+                <div class="text-danger">{{ add_form.email.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ add_form.job_type.label(class="form-label") }}
+            {{ add_form.job_type(class="form-control") }}
+            {% if add_form.job_type.errors %}
+                <div class="text-danger">{{ add_form.job_type.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ add_form.password.label(class="form-label") }}
+            {{ add_form.password(class="form-control") }}
+            {% if add_form.password.errors %}
+                <div class="text-danger">{{ add_form.password.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <button type="submit" name="add_employee" class="btn btn-primary">Add Employee</button>
+    </form>
+
+    <hr class="my-4">
+
+    <h2>Manage Employees</h2>
+    <form method="POST" action="{{ url_for('farmer_bp.employees') }}">
+        {{ manage_form.hidden_tag() }}
+        <div class="form-group">
+            {{ manage_form.employee.label(class="form-label") }}
+            {{ manage_form.employee(class="form-control") }}
+            {% if manage_form.employee.errors %}
+                <div class="text-danger">{{ manage_form.employee.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ manage_form.job_type.label(class="form-label") }}
+            {{ manage_form.job_type(class="form-control") }}
+            {% if manage_form.job_type.errors %}
+                <div class="text-danger">{{ manage_form.job_type.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <button type="submit" name="submit_update" class="btn btn-warning">Update Employee</button>
+        <button type="submit" name="submit_remove" class="btn btn-danger">Remove Employee</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Daily Summary{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Daily Production Summary for {{ summary.date.strftime('%Y-%m-%d') }}</h1>
+        
+        <p>Total Weight Recorded: <span class="total-weight">{{ summary.total_weight }} kg</span></p>
+        
+        <h2>Production Details</h2>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Weight (kg)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for production in productions %}
+                    <tr>
+                        <td>{{ employee_names.get(production.employee_id, 'Unknown') }}</td>
+                        <td>{{ production.weight }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

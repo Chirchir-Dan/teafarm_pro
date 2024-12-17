@@ -1,0 +1,106 @@
+{% extends 'shared/base.html' %}
+
+{% block content %}
+<!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+<h1>View Production Records</h1>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+        {{ form.filter_by.label }}<br>
+        {{ form.filter_by(class="form-control", id="filter_by") }}
+    </div>
+
+    <!-- Date input for Day filter -->
+    <div class="form-group" id="day_filter">
+        {{ form.date.label }}<br>
+        {{ form.date(class="form-control", max=datetime.today().strftime('%Y-%m-%d')) }}
+    </div>
+
+    <!-- Dropdown for Week filter -->
+    <div class="form-group" id="week_filter">
+        {{ form.week.label }}<br>
+        {{ form.week(class="form-control") }}
+    </div>
+
+    <!-- Dropdown for Month filter -->
+    <div class="form-group" id="month_filter">
+        {{ form.month.label }}<br>
+        {{ form.month(class="form-control") }}
+    </div>
+
+    <!-- Dropdown for Year filter -->
+    <div class="form-group" id="year_filter">
+        {{ form.year.label }}<br>
+        {{ form.year(class="form-control") }}
+    </div>
+
+    <div class="form-group">
+        {{ form.submit(class="btn btn-gold") }}
+    </div>
+</form>
+
+<script>
+    // Hide and show filters based on selected filter by option
+    const filterBy = document.getElementById('filter_by');
+    const dayFilter = document.getElementById('day_filter');
+    const weekFilter = document.getElementById('week_filter');
+    const monthFilter = document.getElementById('month_filter');
+    const yearFilter = document.getElementById('year_filter');
+
+    function updateFilters() {
+        const filterValue = filterBy.value;
+        dayFilter.style.display = filterValue === 'day' ? 'block' : 'none';
+        weekFilter.style.display = filterValue === 'week' ? 'block' : 'none';
+        monthFilter.style.display = filterValue === 'month' ? 'block' : 'none';
+        yearFilter.style.display = filterValue === 'year' ? 'block' : 'none';
+    }
+
+    // Initialize filters on page load
+    updateFilters();
+
+    // Update filters when filter_by changes
+    filterBy.addEventListener('change', updateFilters);
+</script>
+
+{% if records %}
+    <h2>Production Records</h2>
+    <h5>Total Weight: {{ total_weight }} Kgs</h5>
+    <h5>Total Amount Paid: Kshs. {{ total_amount }}</h5>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Employee Name</th>
+                <th>Date</th>
+                <th>Weight (kg)</th>
+                <th>Amount Paid</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.employee.name }}</td>
+                <td>{{ record.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ record.weight }}</td>
+                <td>{{ record.amount_paid }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No records found for the selected filters.</p>
+{% endif %}
+
+{% endblock %}

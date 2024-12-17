@@ -1,0 +1,19 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+  <h2>Create Labour Type</h2>
+  <form method="POST" action="{{ url_for('farmer_bp.create_labour') }}">
+    {{ form.hidden_tag() }}
+    <div>
+      {{ form.labour_type.label }}<br>
+      {{ form.labour_type(size=32) }}
+    </div>
+    <div>
+      {{ form.rate.label }}<br>
+      {{ form.rate() }}
+    </div>
+    <div>
+      {{ form.submit() }}
+    </div>
+  </form>
+{% endblock %}

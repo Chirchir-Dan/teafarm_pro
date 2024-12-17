@@ -1,0 +1,22 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+  <h2 class="report-title">Generate Report</h2>
+  <form method="POST" action="{{ url_for('farmer_bp.generate_report') }}" class="report-form">
+    {{ form.hidden_tag() }}
+    
+    <div class="form-group">
+      {{ form.report_type.label(class="form-label") }} 
+      {{ form.report_type(class="form-control") }}
+    </div>
+    
+    <div class="form-group">
+      {{ form.start_date.label(class="form-label") }} 
+      {{ form.start_date(class="form-control") }}
+    </div>
+    
+    <div class="form-group">
+      {{ form.submit(class="btn btn-primary") }}
+    </div>
+  </form>
+{% endblock %}

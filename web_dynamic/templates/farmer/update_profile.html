@@ -1,0 +1,69 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+<!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  <h2 class="update-profile-title">Update Profile</h2>
+  <form method="POST" action="{{ url_for('farmer_bp.update_profile') }}" class="update-profile-form">
+    {{ form.hidden_tag() }}
+    
+    <div class="form-group">
+      {{ form.name.label(class="form-label") }}
+      {{ form.name(class="form-control") }}
+    </div>
+
+    <div class="form-group">
+      {{ form.phone_number.label(class="form-label") }}
+      {{ form.phone_number(class="form-control") }}
+    </div>
+    
+    <div class="form-group">
+      {{ form.email.label(class="form-label") }}
+      {{ form.email(class="form-control") }}
+    </div>
+    
+    <div class="form-group">
+      {{ form.farm_name.label(class="form-label") }}
+      {{ form.farm_name(class="form-control") }}
+    </div>
+    
+    <div class="form-group">
+      {{ form.location.label(class="form-label") }}
+      {{ form.location(class="form-control") }}
+    </div>
+    
+    <div class="form-group">
+      {{ form.total_acreage.label(class="form-label") }}
+      {{ form.total_acreage(class="form-control") }}
+    </div>
+    
+    <div class="form-group">
+      {{ form.current_password.label(class="form-label") }}
+      {{ form.current_password(class="form-control") }}
+    </div>
+
+    <div class="form-group">
+      {{ form.new_password.label(class="form-label") }}
+      {{ form.new_password(class="form-control") }}
+    </div>
+
+    <div class="form-group">
+      {{ form.confirm_password.label(class="form-label") }}
+      {{ form.confirm_password(class="form-control") }}
+    </div>
+
+    <div class="form-group">
+      {{ form.submit(class="btn btn-primary") }}
+    </div>
+  </form>
+{% endblock %}

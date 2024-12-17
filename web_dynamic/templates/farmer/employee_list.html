@@ -1,0 +1,246 @@
+{% extends 'shared/base.html' %}
+
+{% block content %}
+<!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+<div class="container mt-4">
+    <h2>Employee List</h2>
+	
+    <button class="btn btn-success mb-1 btn-sm" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">Add Employee</button>
+
+    <table class="table table-primary table-striped">
+        <thead>
+            <tr>
+		<th>#</th>
+                <th>Name</th>
+                <th>Phone Number</th>
+                <th>Job Type</th>
+		<th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+	    {% if employees %}
+            {% for employee in employees %}
+	    <tr data-id="{{ employee.id  }}" class="table-secondary">
+		<td>{{ loop.index }}</td>
+                <td>{{ employee.name }}</td>
+                <td>{{ employee.phone_number }}</td>
+                <td>{{ employee.job_type.type }}</td>
+		<td>
+			<!-- Edit button triggers modal -->
+			<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ employee.id }}">Edit</button>
+			<button class="btn btn-outline-danger btn-sm" data-id="{{ employee.id }}" onclick="deleteEmployee(this)">Delete</button>
+		</td>
+            </tr>
+
+	    <!-- Edit Modal for each employee -->
+	    <div class="modal fade" id="editModal{{ employee.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ employee.id }}" aria-hidden="true">
+		    <div class="modal-dialog">
+			    <div class="modal-content">
+				    <div class="modal-header">
+					    <h5 class="modal-title" id="editModalLabel{{ employee.id }}">Edit Employee</h5>
+					    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				    </div>
+				    <div class="modal-body">
+					    <input type="hidden" name="employee_id" value="{{ employee.id }}">
+					    <div class="form-group">
+						    <label for="name">Name</label>
+						    <input type="text" class="form-control" name="name" value="{{ employee.name }}">
+					    </div>
+					    <div class="form-group">
+						    <label for="phone_number">Phone Number</label>
+						    <input type="text" class="form-control" name="phone_number" value="{{ employee.phone_number }}">
+					    </div>
+					    <div class="form-group">
+						    <label for="job_type">Job Type</label>
+						    <select name="job_type" class="form-control">
+							    {% for job in job_types %}
+							    <option value="{{ job.id }}" {% if job.id == employee.job_type.id %} selected {% endif %}>{{ job.type }}</option>
+							    {% endfor %}
+						    </select>
+					    </div>
+				    </div>
+				    <div class="modal-footer">
+					    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					    <button type="submit" name="update_employee" class="btn btn-primary" onclick="updateEmployee('{{ employee.id  }}')">Update</button>
+				    </div>
+			    </div>
+		    </div>
+	    </div>
+	    {% endfor %}
+	    {% else %}
+            <tr>
+                <td colspan="4" class="text-center">No employees found.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Employee Modal -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="addEmployeeForm">
+				<div class="modal-header">
+					<h5 class="modal-title" id="addEmployeeModalLabel">Add Employee</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input type="text" class="form-control" id="newEmployeeName" required>
+					</div>
+					<div class="form-group">
+						<label for="phone_number">Phone Number</label>
+						<input type="text" class="form-control" id="newEmployeePhoneNumber" required>
+					</div>
+					<div class="form-group">
+						<label for="email">Email</label>
+						<input type="email" class="form-control" id="newEmployeeEmail">
+					</div>
+					<div class="form-group">
+						<label for="password">Password</label>
+						<input type="password" class="form-control" id="newEmployeePassword" required>
+					</div>
+					<div class="form-group">
+						<label for="job_type">Job Type</label>
+						<select id="newEmployeeJobType" class="form-control">
+							{% for job in job_types %}
+							<option value="{{ job.id }}">{{ job.type }}</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-success">Save Employee</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+	document.getElementById('addEmployeeForm').addEventListener('submit', function(event) {
+	    event.preventDefault();
+	    
+	    const name = document.getElementById('newEmployeeName').value;
+	    const phoneNumber = document.getElementById('newEmployeePhoneNumber').value;
+	    const email = document.getElementById('newEmployeeEmail').value;
+	    const password = document.getElementById('newEmployeePassword').value;
+	    const jobType = document.getElementById('newEmployeeJobType').value;
+
+	    fetch('/farmer/add_employee/', {
+	        method: 'POST',
+		headers: {
+		    'Content-Type': 'application/json',
+		    'X-CSRFToken': "{{ csrf_token() }}"
+		},
+		body: JSON.stringify({
+		    name: name,
+		    phone_number: phoneNumber,
+		    email: email,
+		    password: password,
+		    job_type: jobType
+		})
+	    })
+	    .then(response => response.json())
+	    .then(data => {
+	        if (data.status === 'success') {
+		    const addEmployeeModalEl = document.getElementById('addEmployeeModal');
+		    const addEmployeeModal = new bootstrap.Modal(addEmployeeModalEl);
+		    addEmployeeModal.hide();
+		    location.reload();
+		} else {
+		    alert('Error: ' + data.message);
+		}
+	    })
+	    .catch(error => {
+	        console.error('Error:', error);
+		alert('Error adding employee');
+	    });
+	});
+</script>
+
+<script>
+    function deleteEmployee(button) {
+        const employeeId = button.getAttribute('data-id');
+	if (confirm('Are you sure you want to delete this employee?')) {
+	    fetch(`/farmer/delete_employee/${employeeId}/`, {
+	        method: 'DELETE',
+		headers: {
+		    'Content-Type': 'application/json',
+		    'X-CSRFToken': "{{ csrf_token() }}"
+		}
+	    })
+	    .then(response => response.json())
+	    .then(data => {
+	        if (data.status === 'success') {
+		    button.closest('tr').remove();
+		    alert('Employee deleted successfully!');
+		} else {
+		    alert('Error: ' + data.message);
+		}
+	    })
+	    .catch(error => {
+	        console.error('Error:', error);
+		alert('Error deleting employee');
+	    });
+	}
+    }
+</script>
+<script>
+    function updateEmployee(employeeId) {
+        const name = document.querySelector(`#editModal${employeeId} input[name="name"]`).value;
+	const phone_number = document.querySelector(`#editModal${employeeId} input[name="phone_number"]`).value;
+	const job_type = document.querySelector(`#editModal${employeeId} select[name="job_type"]`).value;
+	
+	fetch(`/farmer/update_employee/${employeeId}/`, {
+	    method: 'PUT',
+	    headers: {
+	        'Content-Type': 'application/json',
+		'X-CSRFToken': "{{ csrf_token() }}",
+	    },
+	    body: JSON.stringify({
+	            name: name,
+		    phone_number: phone_number,
+		    job_type: job_type
+	    })
+	})
+	.then(response => response.json())
+	.then(data => {
+	    if (data.status === 'success') {
+	        alert('Employee updated successfully!');
+
+		// Update the table with new values dynamically
+		const row = document.querySelector(`tr[data-id="${employeeId}"]`);
+		if (row) {
+		    row.querySelector('td:nth-child(1)').textContent = name;
+		    row.querySelector('td:nth-child(2)').textContent = phone_number;
+		    row.querySelector('td:nth-child(3)').textContent = document.querySelector(`#editModal${employeeId} select[name="job_type"] option:checked`).textContent;
+		}
+
+		// Close modal after update
+		document.querySelector(`#editModal${employeeId} .btn-close`).click();
+	    } else {
+		alert('Error: ' + data.message);
+	    }
+	})
+	.catch(error => {
+	    console.error('Error:', error);
+	    alert('Error updating employee');
+	});
+    }
+</script>
+{% endblock %}

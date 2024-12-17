@@ -1,0 +1,12 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+<h2>Welcome, {{ employee.name }}</h2>
+<p>Here's your dashboard. From here, you can view your tasks, track your production, and more.</p>
+<ul>
+    <li><a href="{{ url_for('employee_bp.signin') }}">Sign In</a></li>
+    <li><a href="{{ url_for('employee_bp.signup') }}">Sign Up</a></li>
+    <li><a href="{{ url_for('employee_bp.logout') }}">Logout</a></li>
+    <li><a href="{{ url_for('employee_bp.dashboard') }}">Dashboard</a></li>
+</ul>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+<!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  <div class="container">
+    <h1>Inventory Management</h1>
+
+    <!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="flash-{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Button to trigger the Add Inventory Modal -->
+    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
+      Add Inventory
+    </button>
+
+    <!-- Inventory Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Item Name</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Date Added</th>
+            <th scope="col">Last Updated</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inventory in inventories.items %}
+          <tr>
+            <th scope="row">{{ loop.index + inventories.per_page * (inventories.page - 1) }}</th>
+            <td>{{ inventory.item_name }}</td>
+            <td>{{ inventory.quantity }}</td>
+            <td>{{ inventory.date_added.strftime('%Y-%m-%d') }}</td>
+            <td>{{ inventory.updated_at.strftime('%Y-%m-%d') }}</td>
+            <td>
+              <!-- Edit Button triggers the Edit Modal -->
+              <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#editInventoryModal-{{ inventory.id }}">
+                Edit
+              </button>
+              <!-- Delete Button -->
+              <form method="POST" action="{{ url_for('farmer_bp.manage_inventory', id=inventory.id) }}" style="display:inline;">
+                {{ delete_form.hidden_tag() }}
+                <input type="hidden" name="item_id" value="{{ inventory.id }}">
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+
+          <!-- Edit Inventory Modal -->
+          <div class="modal fade" id="editInventoryModal-{{ inventory.id }}" tabindex="-1" aria-labelledby="editInventoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="editInventoryModalLabel">Edit {{ inventory.item_name }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <form method="POST" action="{{ url_for('farmer_bp.manage_inventory') }}">
+                    {{ edit_form.hidden_tag() }}
+                    {{ edit_form.item_id(value=inventory.id, type="hidden") }}
+
+                    <div class="mb-3">
+                      {{ edit_form.quantity.label }}: {{ edit_form.quantity(size=32, value=inventory.quantity) }}
+                    </div>
+
+                    <div class="modal-footer">
+                      <button type="submit" name="edit_submit" class="btn btn-success">Update</button>
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Inventory Pagination">
+      <ul class="pagination justify-content-center">
+        {% if inventories.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('farmer_bp.manage_inventory', page=inventories.prev_num) }}">Previous</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Previous</span>
+        </li>
+        {% endif %}
+
+        {% for page_num in inventories.iter_pages() %}
+        <li class="page-item {% if page_num == inventories.page %} active {% endif %}">
+          <a class="page-link" href="{{ url_for('farmer_bp.manage_inventory', page=page_num) }}">{{ page_num }}</a>
+        </li>
+        {% endfor %}
+
+        {% if inventories.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('farmer_bp.manage_inventory', page=inventories.next_num) }}">Next</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Next</span>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+
+    <!-- Add Inventory Modal -->
+    <div class="modal fade" id="addInventoryModal" tabindex="-1" aria-labelledby="addInventoryModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addInventoryModalLabel">Add Inventory</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('farmer_bp.manage_inventory') }}">
+              {{ add_form.hidden_tag() }}
+
+              <div class="mb-3">
+                {{ add_form.item_name.label }}: {{ add_form.item_name(size=32) }}
+              </div>
+
+              <div class="mb-3">
+                {{ add_form.quantity.label }}: {{ add_form.quantity(size=32) }}
+              </div>
+
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Add Inventory</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

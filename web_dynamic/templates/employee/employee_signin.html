@@ -1,0 +1,25 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+<h2>Employee Sign In</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.email.label }}<br>
+        {{ form.email() }}
+        {% if form.email.errors %}
+            <div class="error">{{ form.email.errors[0] }}</div>
+        {% endif %}
+    </div>
+    <div>
+        {{ form.password.label }}<br>
+        {{ form.password() }}
+        {% if form.password.errors %}
+            <div class="error">{{ form.password.errors[0] }}</div>
+        {% endif %}
+    </div>
+    <div>
+        {{ form.submit() }}
+    </div>
+</form>
+{% endblock %}

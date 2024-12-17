@@ -1,0 +1,26 @@
+<!-- web_dynamic/templates/farmer/manage_plucking_rate.html -->
+
+{% extends 'shared/base.html' %}
+
+{% block content %}
+<h1>Manage Plucking Rate</h1>
+
+<!-- Rate Form -->
+<form method="POST" action="{{ url_for('farmer_bp.manage_plucking_rate') }}">
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+        {{ form.date.label }}<br>
+        {{ form.date(class="form-control") }}
+    </div>
+
+    <div class="form-group">
+        {{ form.rate_per_kg.label }}<br>
+        {{ form.rate_per_kg(class="form-control") }}
+    </div>
+
+    <div class="form-group">
+        {{ form.submit(class="btn btn-gold") }}
+    </div>
+</form>
+{% endblock %}

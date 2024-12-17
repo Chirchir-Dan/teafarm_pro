@@ -1,0 +1,47 @@
+<!-- /templates/farmer/farmer_dashboard.html -->
+{% extends "shared/base.html" %}
+
+{% block title %}Farmer Dashboard{% endblock %}
+
+{% block content %}
+<!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+<h1>Welcome, {{ farmer.name }}</h1>
+
+<div class="dashboard-summary">
+    <div class="summary-card">
+        <h3>Total Expenses for {{ current_month }}</h3>
+        <p>{{ total_expenses }} KSh</p>
+    </div>
+
+    <div class="summary-card">
+        <h3>Total Tea Produced for {{ current_month }}</h3>
+        <p>{{ total_tea_produced }} Kgs</p>
+    </div>
+
+    <div class="summary-card">
+        <h3>Total Inventory Balance</h3>
+        <p>{{ total_inventory_balance }} Units</p>
+    </div>
+
+    <div class="summary-card">
+        <h3>Total Expenses for {{ current_year }}</h3>
+        <p>{{ total_expenses_year }} KSh</p>
+    </div>
+
+    <div class="summary-card">
+        <h3>Total Tea Produced for {{ current_year }}</h3>
+        <p>{{ total_tea_produced_year }} Kgs</p>
+    </div>
+</div>
+{% endblock %}

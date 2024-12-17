@@ -1,0 +1,60 @@
+<!-- /templates/farmer/expenses.html -->
+{% extends "shared/base.html" %}
+
+{% block title %}Log Expense{% endblock %}
+
+{% block content %}
+<!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+<h1>Log an Expense</h1>
+
+<form method="POST" action="{{ url_for('farmer_bp.expenses') }}" class="expense-form">
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+        <label for="category">{{ form.category.label }}</label>
+        {{ form.category(class="form-control") }}
+        {% for error in form.category.errors %}
+            <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        <label for="description">{{ form.description.label }}</label>
+        {{ form.description(class="form-control", rows="3") }}
+        {% for error in form.description.errors %}
+            <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        <label for="amount">{{ form.amount.label }}</label>
+        {{ form.amount(class="form-control") }}
+        {% for error in form.amount.errors %}
+            <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        <label for="date">{{ form.date.label }}</label>
+        {{ form.date(class="form-control") }}
+        {% for error in form.date.errors %}
+            <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
+{% endblock %}

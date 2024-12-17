@@ -1,0 +1,44 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Welcome to TeaFarm Pro{% endblock %}
+
+{% block content %}
+<!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+<header>
+    <h1>Welcome to TeaFarm Pro</h1>
+    <p>Your ultimate solution for managing your tea farm efficiently.</p>
+
+</header>
+
+<section class="features">
+    <h2>Features</h2>
+    <ul>
+        <li>Manage tasks and workforce</li>
+        <li>Track daily production and operational costs</li>
+        <li>Generate detailed reports</li>
+        <li>Track inventory and usage</li>
+        <li>Access a comprehensive dashboard</li>
+    </ul>
+</section>
+
+<section class="about">
+    <h2>About Us</h2>
+    <p>TeaFarm Pro is designed to help tea farmers optimize their operations and increase productivity. Our platform provides a range of features to streamline your farm management processes.</p>
+</section>
+
+<section class="contact">
+    <h2>Contact Us</h2>
+    <p>If you have any questions or need support, feel free to <a href="mailto:contact@teafarmpro.com">email us</a>.</p>
+</section>
+{% endblock %}
