@@ -207,7 +207,6 @@ The Tea Farm Management System is designed to streamline the management of tea f
    flask init
    flask db migrate -m "Migrating"
    flask db upgrade
-  ```
 
 5. **Start the Development Server:**
    ```bash
