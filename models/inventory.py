@@ -4,7 +4,6 @@ This module contains the Inventory model for tracking inventory in the TeaFarm P
 """
 
 from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
 from models.base_model import BaseModel, db
 
 class Inventory(BaseModel):

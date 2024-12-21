@@ -14,6 +14,7 @@ def init_app(app):
     # Import models here to avoid circular imports
     from .employee import Employee
     from .farmer import Farmer
+    from .inventory import Inventory
     from .labour import Labour
     from .market_value import MarketValue
     from .production import ProductionRecord
