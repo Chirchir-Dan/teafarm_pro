@@ -3,7 +3,9 @@
 Main application file to set up and run the Flask application.
 """
 
-from flask import Flask
+from flask_jwt_extended import JWTManager
+from web_dynamic.routes.api_routes import api_bp
+from flask import Flask, jsonify
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
@@ -17,22 +19,35 @@ from flask_migrate import Migrate
 app = Flask(__name__, static_folder='../web_static')
 app.secret_key = secrets.token_hex(32)
 
-
 # Initialize SQLAlchemy
 password = quote(getenv("MYSQL_ROOT_PWD", ''))
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://root:{password}@localhost/teafarm_dev_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
-
 migrate = Migrate(app, db)
-
-
-# Initialize database
-init_app(app)
 
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
+
+# Register API Blueprint
+app.register_blueprint(api_bp, url_prefix='/api')
+# Disable CSRF protection for API routes
+csrf.exempt(api_bp)
+
+# Initialize JWTManager
+app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
+app.config['JWT_TOKEN_LOCATION'] = ['headers']  # Tokens will be passed via headers
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']
+
+jwt = JWTManager(app)
+
+# Blacklist set to store invalidated tokens
+BLACKLIST = set()
+
+# Initialize database
+init_app(app)
 
 # Initialize LoginManager
 login_manager = LoginManager()
@@ -40,6 +55,21 @@ login_manager.init_app(app)
 login_manager.login_view = "public_bp.signin"
 
 
+# Token blacklist function
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blacklist(jwt_header, jwt_payload):
+    """
+    Function to check if a token is in the blacklist.
+    """
+    return jwt_payload['jti'] in BLACKLIST
+
+# Invalid token
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    """
+    Callback for invalid token.
+    """
+    return jsonify({"message": "Invalid token"}), 401
 
 # User loader function
 @login_manager.user_loader
