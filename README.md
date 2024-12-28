@@ -193,25 +193,28 @@ The Tea Farm Management System is designed to streamline the management of tea f
    git clone https://github.com/Chirchir-Dan/teafarm_pro.git
    cd teafarm_pro
 2. **Install Dependencies:**
+    ```bash
+    source config.sh
+3. **Setup database:**
     Ensure mysql is running. Then proceed with below step:
    ```bash
-   source updated_set_env.sh
-3. **Configure the Database:**
+   source setting_env.sh
+4. **Configure the Database:**
    Update the database configuration in migrations/alembic.ini
    Under [alembic] section, look for the following line and edit
    ```bash
   sqlAlchemy.url = mysql://root:YourRootPassword@localhost/teafarm_dev_db
 
-4. **Run Migrations:**
+5. **Run Migrations:**
    ```bash
    flask init
    flask db migrate -m "Migrating"
    flask db upgrade
 
-5. **Start the Development Server:**
+6. **Start the Development Server:**
    ```bash
    flask run
-6. **Access the Application:**
+7. **Access the Application:**
    ```bash
    - Open a web browser and go to http://127.0.0.1:5000 to access the application.
 
