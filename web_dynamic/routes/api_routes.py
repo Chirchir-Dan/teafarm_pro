@@ -82,7 +82,10 @@ def logout():
     """
     Logout route for invalidating the current JWT token.
     """
-    from web_dynamic.app import BLACKLIST
-    jti = get_jwt()['jti']
-    BLACKLIST.add(jti)
-    return jsonify({'message': 'Successfully logged out'}), 200
+    try:
+        from web_dynamic.app import BLACKLIST
+        jti = get_jwt()['jti']
+        BLACKLIST.add(jti)
+        return jsonify({'message': 'Successfully logged out'}), 200
+    except Exception as e:
+        return jsonify({'error': f'An error occured: {str(e)}'}), 500
