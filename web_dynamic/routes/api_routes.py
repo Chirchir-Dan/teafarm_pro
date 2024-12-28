@@ -30,7 +30,7 @@ def register():
 
     # Check for existing email or phone number
     if Farmer.query.filter((Farmer.email == email) | (Farmer.phone_number == phone_number)).first():
-        return jsonify({"error": "Farmer with this email or phone number already exists"}), 400
+        return jsonify({"error": "Farmer with this email or phone number already exists"}), 409
 
     # Create new Farmer instance
     new_farmer = Farmer(
