@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """
-This module contains the Inventory model for tracking inventory in the TeaFarm Pro application.
+This module contains the Inventory model for tracking inventory
+in the TeaFarm Pro application.
 """
 
 from datetime import datetime
 from models.base_model import BaseModel, db
+
 
 class Inventory(BaseModel):
     """
@@ -14,14 +16,19 @@ class Inventory(BaseModel):
         id (int): Primary key of the inventory item.
         item_name (str): Name of the inventory item.
         quantity (float): Quantity of the inventory item.
-        date_added (datetime): Timestamp of when the inventory was added.
-        date_updated (datetime): Timestamp of when the inventory was last updated.
+        date_added (datetime): Timestamp when inventory was added.
+        date_updated (datetime): Timestamp of when the inventory
+        was last updated.
     """
     __tablename__ = 'inventories'
-    
+
     item_name = db.Column(db.String(255), nullable=False)
-    quantity = db.Column(db.Float, nullable=False, default=0)  # Changed to Float for decimal values
-    date_added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    # Changed to Float for decimal values
+    quantity = db.Column(db.Float, nullable=False, default=0)
+    date_added = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False)
 
     def __repr__(self):
         """

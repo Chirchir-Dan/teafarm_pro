@@ -6,6 +6,7 @@ Contains the class Labour
 from sqlalchemy import Enum, Numeric
 from models.base_model import BaseModel, db
 
+
 class Labour(BaseModel):
     """
     The Labour class represents the types of labor
@@ -14,7 +15,6 @@ class Labour(BaseModel):
     __tablename__ = 'labours'
 
     type = db.Column(db.String(128), nullable=False, unique=True)
-
 
     # Relationshhips
     employees = db.relationship('Employee', back_populates='job_type')

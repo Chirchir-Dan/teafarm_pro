@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+
 def init_app(app):
     # Bind the SQLAlchemy object to the app
     db.init_app(app)

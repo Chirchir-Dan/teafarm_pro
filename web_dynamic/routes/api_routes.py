@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt
+from flask_jwt_extended import JWTManager,\
+    create_access_token, jwt_required, get_jwt
 from werkzeug.security import check_password_hash
 from models.farmer import Farmer
 from models import db
@@ -9,6 +10,7 @@ api_bp = Blueprint('api_bp', __name__)
 
 # JWTManager must be initialized in app.py
 jwt = JWTManager()
+
 
 @api_bp.route('/register', methods=['POST'])
 def register():
@@ -26,11 +28,14 @@ def register():
 
     # Validate required fields
     if not all([name, email, phone_number, password]):
-        return jsonify({"error": "Name, email, phone number, and password are required"}), 400
+        return jsonify({"error": "Name, email, phone number,\
+                and password are required"}), 400
 
     # Check for existing email or phone number
-    if Farmer.query.filter((Farmer.email == email) | (Farmer.phone_number == phone_number)).first():
-        return jsonify({"error": "Farmer with this email or phone number already exists"}), 400
+    if Farmer.query.filter((Farmer.email == email) | (
+            Farmer.phone_number == phone_number)).first():
+        return jsonify({"error": "Farmer with this email\
+                or phone number already exists"}), 400
 
     # Create new Farmer instance
     new_farmer = Farmer(
@@ -51,6 +56,7 @@ def register():
         db.session.rollback()
         return jsonify({"error": f"Failed to register farmer: {str(e)}"}), 500
 
+
 @api_bp.route('/login', methods=['POST'])
 def login():
     """
@@ -70,8 +76,10 @@ def login():
 
     if user and check_password_hash(user.password_hash, password):
         # Create a JWT token
-        access_token = create_access_token(identity=str(user.id)) # set sub to user.id as a string
-        return jsonify({'message': 'Login successful', 'access_token': access_token}), 200
+        access_token = create_access_token(identity=str(
+            user.id))  # set sub to user.id as a string
+        return jsonify({'message': 'Login successful',
+                       'access_token': access_token}), 200
     else:
         return jsonify({'error': 'Invalid email or password'}), 401
 
