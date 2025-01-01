@@ -13,7 +13,10 @@ class Expense(BaseModel):
     """Represents an expense incurred by the farm."""
     __tablename__ = 'expenses'
 
-    category_id = db.Column(db.String(128), db.ForeignKey('labours.id'), nullable=False)
+    category_id = db.Column(
+        db.String(128),
+        db.ForeignKey('labours.id'),
+        nullable=False)
     description = db.Column(db.String(255), nullable=True)
     amount = db.Column(db.Float, nullable=False)
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)

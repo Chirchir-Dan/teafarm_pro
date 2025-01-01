@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token,jwt_required,get_jwt, get_jwt_identity
+from flask_jwt_extended import JWTManager,\
+    create_access_token, jwt_required, get_jwt
 from werkzeug.security import check_password_hash
 from werkzeug.exceptions import BadRequest
 from models.farmer import Farmer
@@ -12,6 +13,7 @@ api_bp = Blueprint('api_bp', __name__)
 
 # JWTManager must be initialized in app.py
 jwt = JWTManager()
+
 
 @api_bp.route('/register', methods=['POST'])
 def register():
@@ -29,7 +31,8 @@ def register():
 
     # Validate required fields
     if not all([name, email, phone_number, password]):
-        return jsonify({"error": "Name, email, phone number, and password are required"}), 400
+        return jsonify({"error": "Name, email, phone number,\
+                and password are required"}), 400
 
     # Check for existing email or phone number
     if Farmer.query.filter((Farmer.email == email) | (Farmer.phone_number == phone_number)).first():
@@ -53,6 +56,7 @@ def register():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Failed to register farmer: {str(e)}"}), 500
+
 
 @api_bp.route('/login', methods=['POST'])
 def login():

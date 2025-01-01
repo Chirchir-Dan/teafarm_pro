@@ -6,6 +6,7 @@ Module for class DailyProductionSummary
 from sqlalchemy import Column, Float, Date
 from models.base_model import BaseModel, db
 
+
 class DailyProductionSummary(BaseModel):
     """
     Represents the total production weight for a specific day
@@ -24,4 +25,6 @@ class DailyProductionSummary(BaseModel):
 
     def __repr__(self):
         """Return a string representation of the instance."""
-        return (f"<DailyProductionSummary(date={self.date}, total_weight={self.total_weight})>")
+        return (
+            f"< DailyProductionSummary(date={self.date}, "
+            f"total_weight={self.total_weight}) >")

@@ -6,6 +6,7 @@ Contains the class MarketValue
 from sqlalchemy import Column, Float, Date
 from models.base_model import BaseModel, db
 
+
 class MarketValue(BaseModel):
     """
     The MarketValue class represents the price per unit weight
@@ -24,4 +25,5 @@ class MarketValue(BaseModel):
 
     def __repr__(self):
         """Return a string representation of the instance."""
-        return f"<MarketValue(date={self.date}, price_per_kg={self.price_per_kg})>"
+        return f"< MarketValue(date={self.date}, "\
+               f"price_per_kg={self.price_per_kg}) >"

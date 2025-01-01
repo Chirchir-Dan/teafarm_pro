@@ -3,6 +3,9 @@
 Main application file to set up and run the Flask application.
 """
 
+from web_dynamic.routes.public_routes import public_bp
+from web_dynamic.routes.employee_routes import employee_bp
+from web_dynamic.routes.farmer_routes import farmer_bp
 from flask_jwt_extended import JWTManager
 from web_dynamic.routes.api_routes import api_bp
 from flask import Flask, jsonify
@@ -21,7 +24,8 @@ app.secret_key = secrets.token_hex(32)
 
 # Initialize SQLAlchemy
 password = quote(getenv("MYSQL_ROOT_PWD", ''))
-app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://root:{password}@localhost/teafarm_dev_db'
+app.config['SQLALCHEMY_DATABASE_URI'] =\
+        f'mysql://root:Assistant!@localhost/teafarm_dev_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
@@ -36,8 +40,9 @@ app.register_blueprint(api_bp, url_prefix='/api')
 csrf.exempt(api_bp)
 
 # Initialize JWTManager
-app.config['JWT_SECRET_KEY'] = getenv('JWT_SECRET_KEY' ,secrets.token_hex(32))
-app.config['JWT_TOKEN_LOCATION'] = ['headers']  # Tokens will be passed via headers
+app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
+# Tokens will be passed via headers
+app.config['JWT_TOKEN_LOCATION'] = ['headers']
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
@@ -66,6 +71,8 @@ def check_if_token_in_blacklist(jwt_header, jwt_payload):
     return jwt_payload['jti'] in BLACKLIST
 
 # Invalid token
+
+
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
     """
@@ -74,6 +81,8 @@ def invalid_token_callback(error):
     return jsonify({"message": "Invalid token"}), 401
 
 # User loader function
+
+
 @login_manager.user_loader
 def load_user(user_id):
     from models.employee import Employee
@@ -87,10 +96,8 @@ def load_user(user_id):
     user = Farmer.query.get(user_id)
     return user
 
+
 # Register Blueprints
-from web_dynamic.routes.farmer_routes import farmer_bp
-from web_dynamic.routes.employee_routes import employee_bp
-from web_dynamic.routes.public_routes import public_bp
 
 app.register_blueprint(farmer_bp, url_prefix='/farmer')
 app.register_blueprint(employee_bp, url_prefix='/employee')
