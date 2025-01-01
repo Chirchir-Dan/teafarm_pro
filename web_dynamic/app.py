@@ -36,10 +36,12 @@ app.register_blueprint(api_bp, url_prefix='/api')
 csrf.exempt(api_bp)
 
 # Initialize JWTManager
-app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
+app.config['JWT_SECRET_KEY'] = getenv('JWT_SECRET_KEY' ,secrets.token_hex(32))
 app.config['JWT_TOKEN_LOCATION'] = ['headers']  # Tokens will be passed via headers
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 
 jwt = JWTManager(app)
 

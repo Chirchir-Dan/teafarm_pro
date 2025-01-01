@@ -14,6 +14,7 @@ class Labour(BaseModel):
     __tablename__ = 'labours'
 
     type = db.Column(db.String(128), nullable=False, unique=True)
+    description = db.Column(db.String(128), nullable=True)
 
 
     # Relationshhips
@@ -25,6 +26,16 @@ class Labour(BaseModel):
         Initializes a Labour instance
         """
         super().__init__(*args, **kwargs)
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the Labour instance
+        """
+        return {
+            'id': self.id,
+            'type': self.type,
+            'description': self.description
+        }
 
     def __repr__(self):
         """

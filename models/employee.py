@@ -24,11 +24,12 @@ class Employee(BaseModel, UserMixin):
     email = db.Column(db.String(128), nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
     job_type_id = db.Column(db.String(128), db.ForeignKey('labours.id'), nullable=False)
-    
+    farmer_id = db.Column(db.String(128), db.ForeignKey('farmers.id'), nullable=False)
 
     productions = db.relationship('ProductionRecord', back_populates='employee')
     job_type = db.relationship('Labour', back_populates='employees')
     tasks = relationship('Task', back_populates='employee', overlaps="tasks, employees")
+    farmer = relationship('Farmer', back_populates='employees')
 
     def __init__(self, *args, **kwargs):
         """
