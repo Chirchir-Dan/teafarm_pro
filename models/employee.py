@@ -13,7 +13,6 @@ from models.production import ProductionRecord
 from models.task import Task
 from models.production import ProductionRecord
 
-
 class Employee(BaseModel, UserMixin):
     """
     Represents an employee in the farm
@@ -24,15 +23,11 @@ class Employee(BaseModel, UserMixin):
     phone_number = db.Column(db.String(10), nullable=False, unique=True)
     email = db.Column(db.String(128), nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
-
     job_type_id = db.Column(db.String(128), db.ForeignKey('labours.id'), nullable=False)
     farmer_id = db.Column(db.String(128), db.ForeignKey('farmers.id'), nullable=False)
 
-    productions = db.relationship(
-        'ProductionRecord',
-        back_populates='employee')
+    productions = db.relationship('ProductionRecord', back_populates='employee')
     job_type = db.relationship('Labour', back_populates='employees')
-
     tasks = relationship('Task', back_populates='employee', overlaps="tasks, employees")
     farmer = relationship('Farmer', back_populates='employees')
 
@@ -65,5 +60,4 @@ class Employee(BaseModel, UserMixin):
 
     def __repr__(self):
         """Return a string representation of the instance."""
-        return f"< Employee(name={self.name}, "\
-               f"id={self.id}, job_type={self.job_type}) >"
+        return f"<Employee(name={self.name}, id={self.id}, job_type={self.job_type})>"

@@ -200,33 +200,42 @@ The Tea Farm Management System is designed to streamline the management of tea f
    ```bash
    source setting_env.sh
 4. **Configure the Database:**
-   Update the database configuration in migrations/alembic.ini
+   Update the database configuration in ***migrations/alembic.ini*** file.
+   
    Under [alembic] section, look for the following line and edit
    ```bash
-  sqlAlchemy.url = mysql://root:YourRootPassword@localhost/teafarm_dev_db
+    sqlAlchemy.url = mysql://root:YourRootPassword@localhost/teafarm_dev_db
+    ```
 
 5. **Run Migrations:**
    ```bash
    flask init
    flask db migrate -m "Migrating"
    flask db upgrade
+   ```
 
 6. **Set the Environment Variables:**
-  ```bash
-  source setting_env.sh
-  ```
-  Set the JWT_SECRET_KEY value
-  ```bash
-  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-  Copy the output of the above command
-  export JWT_SECRET_KEY=<the_copied_characters>
+    ```bash
+    source setting_env.sh
+    ```
+  
+7. Set the JWT_SECRET_KEY value
 
-7. **Start the Development Server:**
+    ```bash
+    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+    ```
+
+    - Copy the output of the above command and paste to _'the_copied_characters'_ below:
+    ```bash
+    export JWT_SECRET_KEY=<the_copied_characters>
+
+
+8. **Start the Development Server:**
    ```bash
    flask run
-8. **Access the Application:**
+9. **Access the Application:**
    ```bash
-   - Open a web browser and go to http://127.0.0.1:5000 to access the application.
+   - Open a web browser and go to http://127.0.0.1:5000 to access the application's web version.
 
 ## Usage
 
@@ -295,5 +304,3 @@ For any questions or support, please contact:
 
 - **Joy Wanjiru Muchemi**
   - [GitHub](https://github.com/muchemiwanjiru)
-
-   
