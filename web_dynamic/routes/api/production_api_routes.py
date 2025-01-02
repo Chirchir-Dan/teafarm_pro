@@ -14,9 +14,9 @@ from models.production import ProductionRecord  # Correct model import
 from models import db
 
 # Initialize Blueprint
-api_bp = Blueprint('api_bp', __name__)
+production_bp = Blueprint('production_bp', __name__)
 
-@api_bp.route('/productions', methods=['GET'])
+@production_bp.route('/productions', methods=['GET'])
 @jwt_required()
 def get_productions():
     """
@@ -35,7 +35,7 @@ def get_productions():
         ), 500
 
 
-@api_bp.route('/productions/<id>', methods=['GET'])
+@production_bp.route('/productions/<id>', methods=['GET'])
 @jwt_required()
 def get_production(id):
     """
@@ -56,7 +56,7 @@ def get_production(id):
         return jsonify({"error": f"Failed to fetch production: {str(e)}"}), 500
 
 
-@api_bp.route('/productions', methods=['POST'])
+@production_bp.route('/productions', methods=['POST'])
 @jwt_required()
 def create_production():
     """
@@ -98,7 +98,7 @@ def create_production():
         ), 500
 
 
-@api_bp.route('/productions/<id>', methods=['PUT'])
+@production_bp.route('/productions/<id>', methods=['PUT'])
 @jwt_required()
 def update_production(id):
     """
@@ -150,7 +150,7 @@ def update_production(id):
         ), 500
 
 
-@api_bp.route('/productions/<id>', methods=['DELETE'])
+@production_bp.route('/productions/<id>', methods=['DELETE'])
 @jwt_required()
 def delete_production(id):
     """
@@ -181,7 +181,7 @@ def delete_production(id):
         ), 500
 
 
-@api_bp.route('/productions/employee/<employee_id>', methods=['GET'])
+@production_bp.route('/productions/employee/<employee_id>', methods=['GET'])
 @jwt_required()
 def get_productions_by_employee(employee_id):
     """
@@ -208,7 +208,7 @@ def get_productions_by_employee(employee_id):
         ), 500
 
 
-@api_bp.route('/productions/total', methods=['GET'])
+@production_bp.route('/productions/total', methods=['GET'])
 @jwt_required()
 def get_total_production():
     """

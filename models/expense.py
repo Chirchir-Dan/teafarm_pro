@@ -35,3 +35,14 @@ class Expense(BaseModel):
         return (f"<Expense(id={self.id}, amount={self.amount}, "
                 f"description={self.description}, date={self.date}, "
                 f"category={self.category})>")
+
+    def to_dict(self):
+        """Convert the Expense instance to a dictionary."""
+        return {
+            "id": self.id,
+            "category_id": self.category_id,
+            "description": self.description,
+            "amount": self.amount,
+            "date": self.date.isoformat() if self.date else None,
+            "category": self.category.to_dict() if self.category else None
+        }

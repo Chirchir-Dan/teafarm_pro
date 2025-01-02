@@ -7,7 +7,8 @@ from web_dynamic.routes.public_routes import public_bp
 from web_dynamic.routes.employee_routes import employee_bp
 from web_dynamic.routes.farmer_routes import farmer_bp
 from flask_jwt_extended import JWTManager
-from web_dynamic.routes.api.production_api_routes import api_bp
+from web_dynamic.routes.api.production_api_routes import production_bp
+from web_dynamic.routes.api.expense_api_routes import expense_bp
 from flask import Flask, jsonify
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager
@@ -40,7 +41,10 @@ def create_app():
 
     # Initialize CSRF protection
     csrf = CSRFProtect(app)
-    csrf.exempt(api_bp)  # Disable CSRF protection for API routes
+    
+    # Disable CSRF protection for API routes
+    csrf.exempt(production_bp)
+    csrf.exempt(expense_bp)
 
     # Initialize JWTManager
     app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
@@ -58,7 +62,8 @@ def create_app():
     init_app(app)
 
     # Register Blueprints
-    app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(production_bp, url_prefix='/api')
+    app.register_blueprint(expense_bp, url_prefix='/api')
     app.register_blueprint(farmer_bp, url_prefix='/farmer')
     app.register_blueprint(employee_bp, url_prefix='/employee')
     app.register_blueprint(public_bp)

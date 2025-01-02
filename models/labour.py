@@ -31,3 +31,12 @@ class Labour(BaseModel):
         Returns a string representation of the Labour instance.
         """
         return f" type={self.type})>"
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the labour instance
+        """
+        return {
+            "id": self.id,
+            "type": self.type,
+        }
