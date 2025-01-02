@@ -45,3 +45,16 @@ class ProductionRecord(BaseModel):
             f"< ProductionRecord(employee_id={self.employee_id}, "
             f"weight={self.weight}, rate={self.rate}, "
             f"te={self.date}, amount_paid={self.amount_paid}) >")
+
+    def to_dict(self):
+        """
+        Convert the ProductionRecord instance to a dictionary.
+        """
+        return {
+            "id": self.id,
+            "employee_id": self.employee_id,
+            "weight": self.weight,
+            "rate": self.rate,
+            "date": self.date.isoformat(),
+            "amount_paid": self.amount_paid
+        }
