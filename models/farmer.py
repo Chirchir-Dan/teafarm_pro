@@ -20,6 +20,8 @@ class Farmer(BaseModel, UserMixin):
     total_acreage = db.Column(db.Float, nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
 
+    employees = db.relationship('Employee', back_populates='farmer')
+
     def __init__(self, *args, **kwargs):
         """
         Initializes a new Farmer instance.
