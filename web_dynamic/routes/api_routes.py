@@ -3,6 +3,7 @@ from flask_jwt_extended import JWTManager, create_access_token, create_refresh_t
 from werkzeug.security import check_password_hash
 from werkzeug.exceptions import BadRequest
 from models.farmer import Farmer
+from sqlalchemy.exc import IntegrityError
 from models.employee import Employee
 from models.labour import Labour
 from models import db
@@ -162,13 +163,19 @@ def create_labour():
     """Route for creating a new labour type."""
     try:
         data = request.json
+        current_farmer_id = get_jwt_identity()
+
         if not data or not data.get('type'):
             return jsonify({"Field 'type' is required."}), 400
         
-        if Labour.query.filter_by(type=data['type']).first():
+        if Labour.query.filter_by(type=data['type'], farmer_id=current_farmer_id).first():
             return jsonify({"error": "Labour type already exists."}), 409
         
-        new_labour = Labour(type=data['type'], description=data.get('description'))
+        new_labour = Labour(
+            type=data['type'],
+            description=data.get('description'),
+            farmer_id=current_farmer_id
+        )
         db.session.add(new_labour)
         db.session.commit()
 
@@ -178,7 +185,7 @@ def create_labour():
         }), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "An unexpected error occurred."}), 500
+        return jsonify({"error": f"An unexpected error occurred. {e}"}), 500
 
 
 @api_bp.route('/labours/<uuid:labour_id>', methods=['PUT'])
@@ -187,17 +194,18 @@ def update_labour(labour_id):
     """Route for updating an existing labour type."""
     try:
         data = request.json
+        current_farmer_id = get_jwt_identity()
 
         if not data or not data.get('type'):
             return jsonify({"error": "Field 'type' is required."}), 400
         
-        labour = Labour.query.get(labour_id)
+        labour = Labour.query.filter(Labour.id==str(labour_id), Labour.farmer_id==current_farmer_id).first()
 
         if not labour:
-            return jsonify({"error": "Labour type not found."}), 404
+            return jsonify({"error": f"Labour type not found. {current_farmer_id==labour.farmer_id}"}), 404
     
         # Check if labour type already exists
-        if Labour.query.filter(Labour.type == data['type'], Labour.id == labour_id).first():
+        if Labour.query.filter(Labour.type == data['type'], Labour.id == labour_id, Labour.farmer_id == current_farmer_id).first():
             return jsonify({"error": "Labour type with this name already exists."}), 409
         
         labour.type = data['type']
@@ -205,9 +213,13 @@ def update_labour(labour_id):
         db.session.commit()
 
         return jsonify({"message": "Labour type updated successfully.", "labour": labour.to_dict()}), 200
+    # Handle MySQLdb.IntegrityError
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({"error": "Labour type with this name already exists."}), 409
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "An unexpected error occured."}), 500
+        return jsonify({"error": f"An unexpected error occured. {e}"}), 500
 
 
 @api_bp.route('/labours', methods=['GET'])
@@ -215,7 +227,9 @@ def update_labour(labour_id):
 def get_labours():
     """Route for fetching all labour types."""
     try:
-        labours = Labour.query.all()
+        current_farmer_id = get_jwt_identity()
+        labours = Labour.query.filter_by(farmer_id=current_farmer_id).all()
+
         return jsonify({
             "labours": [labour.to_dict() for labour in labours]
         }), 200
@@ -228,7 +242,9 @@ def get_labours():
 def delete_labour(labour_id):
     """Route for deleting a labour type."""
     try:
-        labour = Labour.query.get(labour_id)
+        current_farmer_id = get_jwt_identity()
+        labour = Labour.query.filter(Labour.id==str(labour_id), Labour.farmer_id==current_farmer_id).first()
+
         if not labour:
             return jsonify({"error": "Labour type not found."}), 404
     

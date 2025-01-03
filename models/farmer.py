@@ -21,6 +21,7 @@ class Farmer(BaseModel, UserMixin):
     password_hash = db.Column(db.String(256), nullable=False)
 
     employees = db.relationship('Employee', back_populates='farmer')
+    labours = db.relationship('Labour', back_populates='farmer')
 
     def __init__(self, *args, **kwargs):
         """

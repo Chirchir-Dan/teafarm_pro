@@ -3,7 +3,7 @@
 Contains the class Labour
 """
 
-from sqlalchemy import Enum, Numeric
+from sqlalchemy import UniqueConstraint
 from models.base_model import BaseModel, db
 
 
@@ -14,12 +14,17 @@ class Labour(BaseModel):
     """
     __tablename__ = 'labours'
 
-    type = db.Column(db.String(128), nullable=False, unique=True)
+    type = db.Column(db.String(128), nullable=False)
     description = db.Column(db.String(128), nullable=True)
+    farmer_id = db.Column(db.String(128), db.ForeignKey('farmers.id'), nullable=False)
+
+    # Composite unique constraint
+    __table_args__ = (UniqueConstraint('type', 'farmer_id', name='unique_labour_type_per_farmer'), )
 
     # Relationshhips
     employees = db.relationship('Employee', back_populates='job_type')
     tasks = db.relationship('Task', back_populates='labour')
+    farmer = db.relationship('Farmer', back_populates='labours')
 
     def __init__(self, *args, **kwargs):
         """
@@ -34,7 +39,8 @@ class Labour(BaseModel):
         return {
             'id': self.id,
             'type': self.type,
-            'description': self.description
+            'description': self.description,
+            'farmer_id': self.farmer_id
         }
 
     def __repr__(self):
