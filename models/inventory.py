@@ -46,6 +46,16 @@ class Inventory(BaseModel):
         Args:
             amount (float): The amount to adjust the quantity by.
         """
-        self.quantity += amount
+        self.quantity = amount
         self.date_updated = datetime.utcnow()
         db.session.commit()
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'item_name': self.item_name,
+            'quantity': self.quantity,
+            'date_added': self.date_added.isoformat()
+        }
+
+

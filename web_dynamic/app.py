@@ -9,6 +9,7 @@ from web_dynamic.routes.farmer_routes import farmer_bp
 from flask_jwt_extended import JWTManager
 from web_dynamic.routes.api.production_api_routes import production_bp
 from web_dynamic.routes.api.expense_api_routes import expense_bp
+from web_dynamic.routes.api.inventory_api_routes import inventory_bp
 from flask import Flask, jsonify
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager
@@ -45,6 +46,7 @@ def create_app():
     # Disable CSRF protection for API routes
     csrf.exempt(production_bp)
     csrf.exempt(expense_bp)
+    csrf.exempt(inventory_bp)
 
     # Initialize JWTManager
     app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
@@ -67,6 +69,7 @@ def create_app():
     app.register_blueprint(farmer_bp, url_prefix='/farmer')
     app.register_blueprint(employee_bp, url_prefix='/employee')
     app.register_blueprint(public_bp)
+    app.register_blueprint(inventory_bp, url_prefix='/api')
 
     # Token blacklist function
     @jwt.token_in_blocklist_loader
