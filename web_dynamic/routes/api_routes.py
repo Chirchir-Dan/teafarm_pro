@@ -100,7 +100,7 @@ def refresh():
 def create_employee():
     """Create a new employee for a specific farmer."""
     data = request.json
-    required_fields = ['name', 'phone_number', 'password', 'job_type_id', 'farmer_id']
+    required_fields = ['name', 'phone_number', 'password', 'labour_id', 'farmer_id']
     for field in required_fields:
         if not data.get(field):
             raise BadRequest(f"Field '{field}' is required and cannot be empty.")
@@ -110,10 +110,10 @@ def create_employee():
     if not farmer:
         raise BadRequest("Invalid farmer_id. Farmer does not exist.")
     
-    # Validate job_type_id
-    job_type = Labour.query.get(data['job_type_id'])
+    # Validate labour_id
+    job_type = Labour.query.get(data['labour_id'])
     if not job_type:
-        raise BadRequest("Invalid job_type_id. Job type does not exist.")
+        raise BadRequest("Invalid labour_id. Job type does not exist.")
 
     # Check if phone_number is unique
     if Employee.query.filter_by(phone_number=data['phone_number']).first():
@@ -124,7 +124,7 @@ def create_employee():
         name=data['name'],
         phone_number=data['phone_number'],
         email=data.get('email'),
-        job_type_id=data['job_type_id'],
+        labour_id=data['labour_id'],
         farmer_id=data['farmer_id']
     )
     new_employee.set_password(data['password'])  # Hash the password before saving
@@ -137,7 +137,7 @@ def create_employee():
             "name": new_employee.name,
             "phone_number": new_employee.phone_number,
             "email": new_employee.email,
-            "job_type_id": new_employee.job_type_id,
+            "labour_id": new_employee.labour_id,
             "farmer_id": new_employee.farmer_id
         }
     }), 201    
@@ -145,17 +145,129 @@ def create_employee():
 
 @api_bp.route('/employees', methods=['POST'])
 @jwt_required()
-def add_employee():
+def create_employee():
     """Route for adding a new employee."""
     try:
         data = request.json
-        return create_employee(data)
-    except BadRequest as e:
-        return jsonify({"error": str(e)}), 400
+        current_farmer_id = get_jwt_identity()
+
+        # validate required fields
+        if not data or not data.get('name') or not data.get('phone_number') or not data.get('password') or not data.get('labour_id'):
+            return jsonify({"error": "Fields 'name', 'phone_number', 'password', and 'labour_id' are required."}), 400
+
+        # Check if the job type exists
+        job_type = Labour.query.filter_by(id=data['labour_id'], farmer_id=current_farmer_id).first()
+        if not job_type:
+            return jsonify({"error": "Job type not found."}), 404
+        
+        # Check if phone number length is not greater than 10
+        if len(data['phone_number']) > 10:
+            return jsonify({"error": "Phone number must not be more than 10 digits long."}), 400
+        
+        # Check if the phone number is unique
+        if Employee.query.filter_by(name=data['name'], phone_number=data['phone_number'], farmer_id=current_farmer_id).first():
+            return jsonify({"error": "Phone number is already in use."}), 409
+
+        new_employee = Employee(
+            name=data['name'],
+            phone_number=data['phone_number'],
+            email=data['email'],
+            labour_id=data['labour_id'],
+            farmer_id=current_farmer_id
+        )
+        new_employee.set_password(data['password'])
+        db.session.add(new_employee)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Employee created successfully.",
+            "employee": new_employee.to_dict()
+        }), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "An unexpected error occurred."}), 500
+        return jsonify({"error": f"An unexpected error occurred.{e}"}), 500
     
+
+@api_bp.route('/employees/<uuid:employee_id>', methods=['PUT'])
+@jwt_required()
+def update_employee(employee_id):
+    """Route for updating an existing employee."""
+    try:
+        data = request.json
+        current_farmer_id = get_jwt_identity()
+
+        if not data or not data.get('name') or not data.get('phone_number') or not data.get('labour_id'):
+            return jsonify({"error": "Fields 'name', 'phone_number', and 'labour_id' are required."}), 400
+        
+        employee = Employee.query.filter(Employee.id==str(employee_id), Employee.farmer_id==current_farmer_id).first()
+
+        if not employee:
+            return jsonify({"error": "Employee not found."}), 404
+        
+        # Check if the job type exists
+        job_type = Labour.query.filter_by(id=data['labour_id'], farmer_id=current_farmer_id).first()
+        if not job_type:
+            return jsonify({"error": "Job type not found."}), 404
+        
+        # Check if phone number length is not greater than 10
+        if len(data['phone_number']) > 10:
+            return jsonify({"error": "Phone number must not be more than 10 digits long."}), 400
+        
+        # Check if the phone number is unique
+        if Employee.query.filter(Employee.phone_number==data['phone_number'], Employee.farmer_id==current_farmer_id, Employee.id!=str(employee_id)).first():
+            return jsonify({"error": f"Phone number is already in use. {type(employee_id)}"}), 409
+        
+        employee.name = data['name']
+        employee.phone_number = data['phone_number']
+        employee.email = data.get('email', employee.email)
+        employee.labour_id = data['labour_id']
+
+        # Update the password if provided
+        if data.get('password'):
+            employee.set_password(data['password'])
+
+        db.session.commit()
+
+        return jsonify({"message": "Employee updated successfully.", "employee": employee.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An unexpected error occurred. {e}"}), 500
+
+
+@api_bp.route('/employees', methods=['GET'])
+@jwt_required()
+def get_employees():
+    """Route for fetching all employees of a farmer."""
+    try:
+        current_farmer_id = get_jwt_identity()
+        employees = Employee.query.filter_by(farmer_id=current_farmer_id).all()
+
+        return jsonify({
+            "employees": [employee.to_dict() for employee in employees]
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred. {e}"}), 500
+
+
+@api_bp.route('/employees/<uuid:employee_id>', methods=['DELETE'])
+@jwt_required()
+def delete_employee(employee_id):
+    """Route for deleting an employee."""
+    try:
+        current_farmer_id = get_jwt_identity()
+        employee = Employee.query.filter(Employee.id==str(employee_id), Employee.farmer_id==current_farmer_id).first()
+
+        if not employee:
+            return jsonify({"error": "Employee not found."}), 404
+        
+        db.session.delete(employee)
+        db.session.commit()
+
+        return jsonify({"message": "Employee deleted successfully."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An unexpected error occurred.{e}"}), 500
+
 
 @api_bp.route('/labours', methods=['POST'])
 @jwt_required()

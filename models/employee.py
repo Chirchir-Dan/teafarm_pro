@@ -6,10 +6,8 @@ Defines the Employee model
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from models.base_model import BaseModel, db
-from sqlalchemy import Enum
 from sqlalchemy.orm import relationship
 from models.labour import Labour
-from models.production import ProductionRecord
 from models.task import Task
 from models.production import ProductionRecord
 
@@ -20,11 +18,13 @@ class Employee(BaseModel, UserMixin):
     __tablename__ = 'employees'
 
     name = db.Column(db.String(128), nullable=False)
-    phone_number = db.Column(db.String(10), nullable=False, unique=True)
+    phone_number = db.Column(db.String(10), nullable=False)
     email = db.Column(db.String(128), nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
-    job_type_id = db.Column(db.String(128), db.ForeignKey('labours.id'), nullable=False)
+    labour_id = db.Column(db.String(128), db.ForeignKey('labours.id'), nullable=False)
     farmer_id = db.Column(db.String(128), db.ForeignKey('farmers.id'), nullable=False)
+
+    __table_args__ = (db.UniqueConstraint('name', 'phone_number', 'farmer_id', name='unique_employee_name_phone_per_farmer'), )
 
     productions = db.relationship('ProductionRecord', back_populates='employee')
     job_type = db.relationship('Labour', back_populates='employees')
@@ -57,6 +57,17 @@ class Employee(BaseModel, UserMixin):
     @property
     def is_employee(self):
         return True
+    
+    def to_dict(self):
+        """Return a dictionary representation of the instance."""
+        employee_dict = {
+            'id': self.id,
+            'name': self.name,
+            'phone_number': self.phone_number,
+            'email': self.email,
+            'labour_id': self.labour_id,
+        }
+        return employee_dict
 
     def __repr__(self):
         """Return a string representation of the instance."""
