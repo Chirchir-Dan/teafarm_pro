@@ -28,7 +28,6 @@ from models.labour import Labour
 from models.employee import Employee
 from models.production import ProductionRecord
 from models.market_value import MarketValue
-from models.daily_production_summary import DailyProductionSummary
 from models.inventory import Inventory
 from models import db
 from datetime import datetime, timedelta

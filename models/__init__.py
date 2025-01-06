@@ -19,10 +19,7 @@ def init_app(app):
     from .labour import Labour
     from .market_value import MarketValue
     from .production import ProductionRecord
-    from .sales import DailySales
     from .expense import Expense
-    from .task import Task
-    from .daily_production_summary import DailyProductionSummary
 
     # Create all tables (optional, remove if migrations are used)
     with app.app_context():
