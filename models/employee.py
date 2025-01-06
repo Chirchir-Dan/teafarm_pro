@@ -6,12 +6,10 @@ Defines the Employee model
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from models.base_model import BaseModel, db
-from sqlalchemy import Enum
 from sqlalchemy.orm import relationship
 from models.labour import Labour
+from models.task import Task
 from models.production import ProductionRecord
-from models.production import ProductionRecord
-
 
 class Employee(BaseModel, UserMixin):
     """
@@ -20,21 +18,18 @@ class Employee(BaseModel, UserMixin):
     __tablename__ = 'employees'
 
     name = db.Column(db.String(128), nullable=False)
-    phone_number = db.Column(db.String(10), nullable=False, unique=True)
+    phone_number = db.Column(db.String(10), nullable=False)
     email = db.Column(db.String(128), nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
+    labour_id = db.Column(db.String(128), db.ForeignKey('labours.id'), nullable=False)
     farmer_id = db.Column(db.String(128), db.ForeignKey('farmers.id'), nullable=False)
-    job_type_id = db.Column(db.String(128), db.ForeignKey('labours.id'), nullable=False)
-    is_active = db.Column(db.Boolean, default=True)
 
+    __table_args__ = (db.UniqueConstraint('name', 'phone_number', 'farmer_id', name='unique_employee_name_phone_per_farmer'), )
 
-    # Relationships
-    productions = db.relationship(
-        'ProductionRecord',
-        back_populates='employee'
-    )
+    productions = db.relationship('ProductionRecord', back_populates='employee')
     job_type = db.relationship('Labour', back_populates='employees')
-    farmer = db.relationship('Farmer', back_populates='employees')
+    tasks = relationship('Task', back_populates='employee', overlaps="tasks, employees")
+    farmer = relationship('Farmer', back_populates='employees')
 
     def __init__(self, *args, **kwargs):
         """
@@ -55,15 +50,6 @@ class Employee(BaseModel, UserMixin):
         """Method to retrieve all employees"""
         return cls.query.all()
 
-    @classmethod
-    def get_active_employees(cls):
-        """
-        Retrieves all active employees.
-        
-        :return: List of active Employee instances.
-        """
-        return cls.query.filter_by(is_active=True).all()
-
     @property
     def is_farmer(self):
         return False
@@ -71,11 +57,18 @@ class Employee(BaseModel, UserMixin):
     @property
     def is_employee(self):
         return True
+    
+    def to_dict(self):
+        """Return a dictionary representation of the instance."""
+        employee_dict = {
+            'id': self.id,
+            'name': self.name,
+            'phone_number': self.phone_number,
+            'email': self.email,
+            'labour_id': self.labour_id,
+        }
+        return employee_dict
 
     def __repr__(self):
         """Return a string representation of the instance."""
-        return (
-            f"< Employee(name={self.name}, id={self.id}, "
-            f"job_type={self.job_type.type if self.job_type else 'N/A'}, "
-            f"is_active={self.is_active})>"
-        )
+        return f"<Employee(name={self.name}, id={self.id}, job_type={self.job_type})>"

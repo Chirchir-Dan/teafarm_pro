@@ -20,12 +20,7 @@ class Farmer(BaseModel, UserMixin):
     total_acreage = db.Column(db.Float, nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
 
-    # Relationships
-    expenses = db.relationship('Expense', backref='farmer', lazy=True)
     employees = db.relationship('Employee', back_populates='farmer')
-    production_records = db.relationship('ProductionRecord',
-    back_populates='farmer')
-
     labours = db.relationship('Labour', back_populates='farmer')
 
     def __init__(self, *args, **kwargs):
