@@ -8,9 +8,10 @@ expenses, including creating, reading, updating, and deleting expenses.
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from models.expense import Expense  # Correct model import
+from models.expense import Expense
 from models import db
 import traceback
+from datetime import date
 
 # Initialize Blueprint
 expense_bp = Blueprint('expense_bp', __name__)
@@ -30,9 +31,7 @@ def get_expenses():
         return jsonify(result), 200
     except Exception as e:
         traceback.print_exc()
-        return jsonify(
-            {"error": f"Failed to fetch expenses: {str(e)}"}
-        ), 500
+        return jsonify({"error": f"Failed to fetch expenses: {str(e)}"}), 500
 
 
 @expense_bp.route('/expenses/<id>', methods=['GET'])
@@ -67,7 +66,8 @@ def create_expense():
             "category_id": "<category_id>",
             "description": "<description>",  # Nullable field
             "amount": <amount>,
-            "date": "<date>"
+            "farmer_id": <farmer_id>
+            "date": <date>
         }
 
     Returns:
@@ -77,26 +77,25 @@ def create_expense():
     category_id = data.get('category_id')
     description = data.get('description', None)  # Default to None if not provided
     amount = data.get('amount')
-    date = data.get('date')
+    farmer_id = data.get('farmer_id')
 
-    if not all([category_id, amount, date]):
-        return jsonify(
-            {"error": "Category ID, amount, and date are required"}
-        ), 400
+    if not all([category_id, amount, farmer_id]):
+        return jsonify({"error": "Category ID, amount, and farmer ID are required"}), 400
 
     try:
         new_expense = Expense(
-            category_id=category_id, description=description, 
-            amount=amount, date=date
+            category_id=category_id,
+            description=description,
+            amount=amount,
+            farmer_id=farmer_id,
+            date=date
         )
         db.session.add(new_expense)
         db.session.commit()
         return jsonify(new_expense.to_dict()), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify(
-            {"error": f"Failed to create expense: {str(e)}"}
-        ), 500
+        return jsonify({"error": f"Failed to create expense: {str(e)}"}), 500
 
 
 @expense_bp.route('/expenses/<id>', methods=['PUT'])
@@ -113,7 +112,7 @@ def update_expense(id):
             "category_id": "<category_id>",
             "description": "<description>",  # Nullable field
             "amount": <amount>,
-            "date": "<date>"
+            "farmer_id": <farmer_id>
         }
 
     Returns:
@@ -123,12 +122,10 @@ def update_expense(id):
     category_id = data.get('category_id')
     description = data.get('description', None)  # Default to None if not provided
     amount = data.get('amount')
-    date = data.get('date')
+    farmer_id = data.get('farmer_id')
 
-    if not all([category_id, amount, date]):
-        return jsonify(
-            {"error": "Category ID, amount, and date are required"}
-        ), 400
+    if not all([category_id, amount, farmer_id]):
+        return jsonify({"error": "Category ID, amount, and farmer ID are required"}), 400
 
     try:
         expense = db.session.get(Expense, id)
@@ -138,15 +135,13 @@ def update_expense(id):
         expense.category_id = category_id
         expense.description = description
         expense.amount = amount
-        expense.date = date
+        expense.farmer_id = farmer_id
         db.session.commit()
 
         return jsonify(expense.to_dict()), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify(
-            {"error": f"Failed to update expense: {str(e)}"}
-        ), 500
+        return jsonify({"error": f"Failed to update expense: {str(e)}"}), 500
 
 
 @expense_bp.route('/expenses/<id>', methods=['DELETE'])
@@ -172,6 +167,4 @@ def delete_expense(id):
         return '', 204
     except Exception as e:
         db.session.rollback()
-        return jsonify(
-            {"error": f"Failed to delete expense: {str(e)}"}
-        ), 500
+        return jsonify({"error": f"Failed to delete expense: {str(e)}"}), 500

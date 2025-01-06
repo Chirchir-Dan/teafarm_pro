@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import pytest
 import uuid
+from datetime import date
 from web_dynamic.app import create_app, db
 from flask_jwt_extended import create_access_token
 from models.expense import Expense
@@ -13,9 +14,6 @@ def setup_database(app):
     db.drop_all()
     db.create_all()
 
-    labour_type = Labour(type="plucking", rate=10.0)
-    db.session.add(labour_type)
-    db.session.commit()
     
     test_farmer = Farmer(
         name="John Doe",
@@ -26,16 +24,27 @@ def setup_database(app):
     db.session.add(test_farmer)
     db.session.commit()
 
+    labour_type = Labour(
+        type="plucking",
+        farmer_id=test_farmer.id
+    )
+    db.session.add(labour_type)
+    db.session.commit()
+
+    # Attach expenses to the test farmer
     expense1 = Expense(
         category_id=labour_type.id,
         description="Test expense 1",
         amount=100.0,
-        date="2024-12-01"
+        date=date.today().strftime('%Y-%m-%d'),
+        farmer_id=test_farmer.id  # Link expense to the test farmer
     )
     expense2 = Expense(
         description="Plucking expense",
         amount=150.0,
-        category_id=labour_type.id
+        date=date.today().strftime('%Y-%m-%d'),
+        category_id=labour_type.id,
+        farmer_id=test_farmer.id  # Link expense to the test farmer
     )
     db.session.add_all([expense1, expense2])
     db.session.commit()
@@ -53,8 +62,8 @@ def test_get_expenses():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
-        access_token = create_access_token(identity=test_user.id)
+        test_farmer = setup_database(app)
+        access_token = create_access_token(identity=test_farmer.id)
 
         with app.test_client() as client:
             response = client.get(
@@ -76,10 +85,11 @@ def test_get_single_expense():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
-        access_token = create_access_token(identity=test_user.id)
+        test_farmer = setup_database(app)
+        access_token = create_access_token(identity=test_farmer.id)
 
-        expense = Expense.query.first()
+        expense = db.session.query(Expense).filter_by(farmer_id=test_farmer.id).first()
+        assert expense is not None
 
         with app.test_client() as client:
             response = client.get(
@@ -89,10 +99,9 @@ def test_get_single_expense():
 
             assert response.status_code == 200
             data = response.get_json()
-            assert data['amount'] == 100.0
-            assert data['description'] == "Test expense 1"
-            assert data['date'] == "2024-12-01"
-
+            assert data['amount'] == expense.amount
+            assert data['description'] == expense.description
+            assert data['date'] == expense.date.isoformat()
 
 def test_create_expense():
     """Test creating a new expense record."""
@@ -100,18 +109,18 @@ def test_create_expense():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
+        test_farmer = setup_database(app)
 
-        labor_category = Labour.query.first()
-        assert labor_category is not None
+        labour_type = db.session.query(Labour).filter_by(farmer_id=test_farmer.id).first()
 
-        access_token = create_access_token(identity=test_user.id)
+        access_token = create_access_token(identity=test_farmer.id)
 
         payload = {
-            "category_id": labor_category.id,
+            "category_id": labour_type.id,
             "description": "New plucking expense",
-            "amount": 150.0,
-            "date": "2024-12-02"
+            "amount": 200.0,
+            "date": date.today().strftime('%Y-%m-%d'),
+            "farmer_id": test_farmer.id
         }
 
         with app.test_client() as client:
@@ -121,10 +130,12 @@ def test_create_expense():
                 headers={'Authorization': f'Bearer {access_token}'}
             )
 
+            print(response.data)
             assert response.status_code == 201
             data = response.get_json()
-            assert data['amount'] == 150.0
+            assert data['amount'] == 200.0
             assert data['description'] == "New plucking expense"
+            assert data['date'] == date.today().isoformat()
 
 
 def test_update_expense():
@@ -133,15 +144,19 @@ def test_update_expense():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
-        access_token = create_access_token(identity=test_user.id)
+        test_farmer = setup_database(app)
+        assert test_farmer.id is not None
+        access_token = create_access_token(identity=test_farmer.id)
 
-        expense = Expense.query.first()
+        expense = db.session.query(Expense).filter_by(farmer_id=test_farmer.id).first()
+        assert expense is not None
+
         payload = {
             "amount": 120.0,
-            "description": "Updated plucking expense",
-            "date": "2024-12-01",
-            "category_id": expense.category_id
+            "description": "Updated expense description",
+            "category_id": expense.category_id,
+            "date": date.today().isoformat(),
+            "farmer_id": test_farmer.id
         }
 
         with app.test_client() as client:
@@ -151,10 +166,12 @@ def test_update_expense():
                 headers={'Authorization': f'Bearer {access_token}'}
             )
 
+            print(response.data)
             assert response.status_code == 200
             data = response.get_json()
             assert data['amount'] == 120.0
-            assert data['description'] == "Updated plucking expense"
+            assert data['description'] == "Updated expense description"
+            assert data['date'] == date.today().isoformat()
 
 
 def test_delete_expense():
@@ -163,10 +180,11 @@ def test_delete_expense():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
-        access_token = create_access_token(identity=test_user.id)
+        test_farmer = setup_database(app)
+        access_token = create_access_token(identity=test_farmer.id)
 
-        expense = Expense.query.first()
+        expense = db.session.query(Expense).filter_by(farmer_id=test_farmer.id).first()
+        assert expense is not None
 
         with app.test_client() as client:
             response = client.delete(

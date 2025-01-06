@@ -15,10 +15,11 @@ class Labour(BaseModel):
     __tablename__ = 'labours'
 
     type = db.Column(db.String(128), nullable=False, unique=True)
+    farmer_id = db.Column(db.String(36), db.ForeignKey('farmers.id'), nullable=False)
 
     # Relationshhips
+    farmer = db.relationship('Farmer', back_populates='labours')
     employees = db.relationship('Employee', back_populates='job_type')
-    tasks = db.relationship('Task', back_populates='labour')
 
     def __init__(self, *args, **kwargs):
         """
@@ -30,7 +31,7 @@ class Labour(BaseModel):
         """
         Returns a string representation of the Labour instance.
         """
-        return f" type={self.type})>"
+        return f"<Labour(type={self.type})>"
 
     def to_dict(self):
         """
@@ -39,4 +40,6 @@ class Labour(BaseModel):
         return {
             "id": self.id,
             "type": self.type,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

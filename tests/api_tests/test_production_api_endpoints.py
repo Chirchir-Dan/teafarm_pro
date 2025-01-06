@@ -5,6 +5,7 @@ from web_dynamic.app import create_app, db
 from models.production import ProductionRecord
 from flask_jwt_extended import create_access_token
 from models.employee import Employee
+from models.farmer import Farmer
 from models.labour import Labour
 
 
@@ -13,16 +14,29 @@ def setup_database(app):
     db.drop_all()
     db.create_all()
 
-    labour_type = Labour(type="plucking", rate=10.0)
+    test_farmer = Farmer(
+        name="John Doe",
+        email="test@user.com",
+        phone_number="123456789",
+        password_hash="hashedpassword"
+    )
+    db.session.add(test_farmer)
+    db.session.commit()
+
+    labour_type = Labour(
+        type="plucking",
+        farmer_id=test_farmer.id)
     db.session.add(labour_type)
     db.session.commit()
+
 
     test_user = Employee(
         name="Test Employee",
         email="test@employee.com",
         phone_number="1234567890",
         job_type_id=labour_type.id,
-        password_hash="password"
+        password_hash="password",
+        farmer_id=test_farmer.id
     )
     db.session.add(test_user)
     db.session.commit()
@@ -32,12 +46,18 @@ def setup_database(app):
         employee_id=test_user.id,
         weight=100.0,
         rate=10.0,
-        date="2024-12-01"
+        date="2024-12-01",
+        farmer_id=test_farmer.id
     )
     db.session.add(production)
     db.session.commit()
 
-    return test_user
+    print(f"Test Farmer ID: {test_farmer.id}")
+    print(f"Test User ID: {test_user.id}")
+    print(f"Production Farmer ID: {production.farmer_id}")
+
+
+    return test_user, test_farmer, production
 
 
 def test_get_productions():
@@ -46,7 +66,8 @@ def test_get_productions():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
+        test_user, test_farmer, production = setup_database(app)
+
         access_token = create_access_token(identity=test_user.id)
 
         with app.test_client() as client:
@@ -70,7 +91,7 @@ def test_get_single_production():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
+        test_user, test_farmer, production = setup_database(app)
         access_token = create_access_token(identity=test_user.id)
 
         production = ProductionRecord.query.first()
@@ -94,14 +115,15 @@ def test_create_production():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
+        test_user, test_farmer, production = setup_database(app)
         access_token = create_access_token(identity=test_user.id)
 
         payload = {
             "employee_id": test_user.id,
             "weight": 150.0,
             "rate": 12.0,
-            "date": "2024-12-02"
+            "date": "2024-12-02",
+            "farmer_id": test_farmer.id
         }
 
         with app.test_client() as client:
@@ -110,7 +132,8 @@ def test_create_production():
                 json=payload,
                 headers={'Authorization': f'Bearer {access_token}'}
             )
-
+            
+            print(response.data)
             assert response.status_code == 201
             data = response.get_json()
             assert data['weight'] == 150.0
@@ -123,7 +146,7 @@ def test_update_production():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
+        test_user, test_farmer, production = setup_database(app)
         access_token = create_access_token(identity=test_user.id)
 
         production = ProductionRecord.query.first()
@@ -153,7 +176,7 @@ def test_delete_production():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
+        test_user, test_farmer, production = setup_database(app)
         access_token = create_access_token(identity=test_user.id)
 
         production = ProductionRecord.query.first()
@@ -174,7 +197,7 @@ def test_total_production():
     app.config['TESTING'] = True
 
     with app.app_context():
-        test_user = setup_database(app)
+        test_user, test_farmer, production = setup_database(app)
         access_token = create_access_token(identity=test_user.id)
 
         payload = {

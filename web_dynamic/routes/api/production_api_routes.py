@@ -68,6 +68,7 @@ def create_production():
             "weight": <weight>,
             "rate": <rate>,
             "employee_id": <employee_id>
+            "farmer_id": <farmer_id>
         }
 
     Returns:
@@ -78,15 +79,17 @@ def create_production():
     weight = data.get('weight')
     rate = data.get('rate')
     employee_id = data.get('employee_id')
+    farmer_id = data.get('farmer_id')
 
-    if not all([date, weight, rate, employee_id]):
+    if not all([date, weight, rate, employee_id, farmer_id]):
         return jsonify(
-            {"error": "Date, weight, rate, and employee_id are required"}
+            {"error": "Date, weight, rate, employee_id and farmer_id are required"}
         ), 400
 
     try:
         new_production = ProductionRecord(
-            date=date, weight=weight, rate=rate, employee_id=employee_id
+            date=date, weight=weight, rate=rate, employee_id=employee_id,
+            farmer_id=farmer_id
         )
         db.session.add(new_production)
         db.session.commit()

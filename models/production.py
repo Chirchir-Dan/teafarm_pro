@@ -22,9 +22,15 @@ class ProductionRecord(BaseModel):
     # Rate per kg recorded at the time of production
     rate = db.Column(db.Float, nullable=False)
     date = db.Column(db.Date, nullable=False)
+    farmer_id = db.Column(
+        db.String(128),
+        db.ForeignKey('farmers.id'),
+        nullable=False
+    )
 
     # Relationship with the Employee model
     employee = relationship('Employee', back_populates='productions')
+    farmer = relationship('Farmer', back_populates='production_records')
 
     def __init__(self, *args, **kwargs):
         """

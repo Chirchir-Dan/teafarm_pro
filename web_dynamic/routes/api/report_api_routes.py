@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 """
-Routes for generating reports for the farmer
+Routes for generating reports for the farmer dynamically from models
 """
-from flask import Blueprint, request, jsonify, abort, send_file
+from flask import Blueprint, request, jsonify, abort, send_file, render_template
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db
+from models.production import ProductionRecord
+from models.expense import Expense
 import datetime
 from io import BytesIO
-import os
 from weasyprint import HTML
 
 # Blueprint setup
-report_bp = Blueprint('report', __name__, url_prefix='/api/reports')
+report_bp = Blueprint('report_bp', __name__)
 
-# Route 1: Generate a report based on report type and time frame
-@report_bp.route('', methods=['POST'])
+# Allowed values for validation
+ALLOWED_REPORT_TYPES = {'production', 'expenses'}
+ALLOWED_TIME_FRAMES = {'daily', 'weekly', 'monthly'}
+
+# Route: Generate a report based on report type and time frame
+@report_bp.route('/reports', methods=['POST'])
 @jwt_required()
 def generate_report():
     """
@@ -24,17 +28,30 @@ def generate_report():
 
     # Validate input data
     data = request.get_json()
-    if 'report_type' not in data or 'time_frame' not in data:
-        abort(400, description="Missing required fields (report_type, time_frame).")
+    if not data:
+        abort(400, description="Request body must be JSON.")
 
-    report_type = data['report_type']
-    time_frame = data['time_frame']
+    report_type = data.get('report_type')
+    time_frame = data.get('time_frame')
 
-    # Generate report data based on report type and time frame
-    report_data = generate_report_data(report_type, time_frame)
+    # Check if the report_type is valid
+    if report_type not in ALLOWED_REPORT_TYPES:
+        # Return a 400 error with a message for invalid report_type
+        return jsonify({
+            'error': f"Invalid report type '{report_type}'. Supported types are: {ALLOWED_REPORT_TYPES}."
+        }), 400
 
+    # Check if the time_frame is valid
+    if time_frame not in ALLOWED_TIME_FRAMES:
+        # Return a 400 error with a message for invalid time_frame
+        return jsonify({
+            'error': f"Invalid time frame '{time_frame}'. Supported frames are: {ALLOWED_TIME_FRAMES}."
+        }), 400
+
+    # Generate report data dynamically
+    report_data = generate_report_data(report_type, time_frame, current_farmer_id)
     if not report_data:
-        abort(400, description="Invalid report type or time frame.")
+        abort(404, description="No data available for the requested report.")
 
     # Return the generated report data or PDF
     if 'pdf' in request.args:  # Check if the 'pdf' query parameter is present
@@ -46,56 +63,79 @@ def generate_report():
         "data": report_data
     }), 200
 
-def generate_report_data(report_type, time_frame):
+def generate_report_data(report_type, time_frame, farmer_id):
     """
     Generate report data based on report type and time frame.
     """
     if report_type == 'production':
-        return generate_production_report(time_frame)
+        return generate_production_report(time_frame, farmer_id)
     elif report_type == 'expenses':
-        return generate_expense_report(time_frame)
-    # Add other report types here as needed
+        return generate_expense_report(time_frame, farmer_id)
     return None
 
-def generate_production_report(time_frame):
+def generate_production_report(time_frame, farmer_id):
     """
-    Generate a production report based on the time frame (daily, monthly, etc.).
+    Generate a production report dynamically based on the time frame.
     """
     today = datetime.date.today()
     report_data = []
 
     if time_frame == 'daily':
-        report_data.append({
-            "date": today,
-            "production": 120  # Example value
-        })
+        productions = ProductionRecord.query.filter_by(farmer_id=farmer_id, date=today).all()
+    elif time_frame == 'weekly':
+        start_date = today - datetime.timedelta(days=today.weekday())  # Start of the week (Monday)
+        productions = ProductionRecord.query.filter(
+            ProductionRecord.farmer_id == farmer_id,
+            ProductionRecord.date.between(start_date, today)
+        ).all()
     elif time_frame == 'monthly':
-        for i in range(30):  # Simulate 30 days of production
-            report_data.append({
-                "date": today - datetime.timedelta(days=i),
-                "production": 100 + i  # Example production values
-            })
+        start_date = today.replace(day=1)
+        productions = ProductionRecord.query.filter(
+            ProductionRecord.farmer_id == farmer_id,
+            ProductionRecord.date.between(start_date, today)
+        ).all()
+    else:
+        abort(400, description="Invalid time frame.")
+
+    for production in productions:
+        report_data.append({
+            "date": production.date.isoformat(),
+            "quantity": production.quantity,
+            "employee": production.employee.name  # Ensure production.employee is an instance, not a string.
+        })
 
     return report_data
 
-def generate_expense_report(time_frame):
+def generate_expense_report(time_frame, farmer_id):
     """
-    Generate an expense report based on the time frame (daily, monthly, etc.).
+    Generate an expense report dynamically based on the time frame.
     """
     today = datetime.date.today()
     report_data = []
 
     if time_frame == 'daily':
-        report_data.append({
-            "date": today,
-            "expense": 50  # Example value
-        })
+        expenses = Expense.query.filter_by(farmer_id=farmer_id, date=today).all()
+    elif time_frame == 'weekly':
+        start_date = today - datetime.timedelta(days=today.weekday())  # Start of the week (Monday)
+        expenses = Expense.query.filter(
+            Expense.farmer_id == farmer_id,
+            Expense.date.between(start_date, today)
+        ).all()
     elif time_frame == 'monthly':
-        for i in range(30):  # Simulate 30 days of expenses
-            report_data.append({
-                "date": today - datetime.timedelta(days=i),
-                "expense": 150 + i  # Example expense values
-            })
+        start_date = today.replace(day=1)
+        expenses = Expense.query.filter(
+            Expense.farmer_id == farmer_id,
+            Expense.date.between(start_date, today)
+        ).all()
+    else:
+        abort(400, description="Invalid time frame.")
+
+    for expense in expenses:
+        report_data.append({
+            "date": expense.date.isoformat(),
+            "amount": expense.amount,
+            "category": expense.category
+        })
 
     return report_data
 
@@ -103,25 +143,13 @@ def generate_pdf_report(report_data, report_type, time_frame):
     """
     Generate a PDF report using WeasyPrint and return it as a downloadable file.
     """
-    # Convert the report data to HTML format
-    html_content = f"""
-    <html>
-    <head><title>{report_type.capitalize()} Report ({time_frame})</title></head>
-    <body>
-    <h1>{report_type.capitalize()} Report ({time_frame})</h1>
-    <table border="1">
-    <tr><th>Date</th><th>Amount</th></tr>
-    """
-
-    for entry in report_data:
-        html_content += f"""
-        <tr>
-            <td>{entry['date']}</td>
-            <td>{entry['expense'] if 'expense' in entry else entry['production']}</td>
-        </tr>
-        """
-
-    html_content += "</table></body></html>"
+    # Render the HTML content for the report
+    html_content = render_template(
+        'report_template.html',
+        report_type=report_type,
+        time_frame=time_frame,
+        report_data=report_data
+    )
 
     # Convert HTML to PDF using WeasyPrint
     pdf = HTML(string=html_content).write_pdf()

@@ -10,7 +10,6 @@ from sqlalchemy import Enum
 from sqlalchemy.orm import relationship
 from models.labour import Labour
 from models.production import ProductionRecord
-from models.task import Task
 from models.production import ProductionRecord
 
 
@@ -24,19 +23,18 @@ class Employee(BaseModel, UserMixin):
     phone_number = db.Column(db.String(10), nullable=False, unique=True)
     email = db.Column(db.String(128), nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
-    job_type_id = db.Column(
-        db.String(128),
-        db.ForeignKey('labours.id'),
-        nullable=False)
+    farmer_id = db.Column(db.String(128), db.ForeignKey('farmers.id'), nullable=False)
+    job_type_id = db.Column(db.String(128), db.ForeignKey('labours.id'), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
 
+
+    # Relationships
     productions = db.relationship(
         'ProductionRecord',
-        back_populates='employee')
+        back_populates='employee'
+    )
     job_type = db.relationship('Labour', back_populates='employees')
-    tasks = relationship(
-        'Task',
-        back_populates='employee',
-        overlaps="tasks, employees")
+    farmer = db.relationship('Farmer', back_populates='employees')
 
     def __init__(self, *args, **kwargs):
         """
@@ -57,6 +55,15 @@ class Employee(BaseModel, UserMixin):
         """Method to retrieve all employees"""
         return cls.query.all()
 
+    @classmethod
+    def get_active_employees(cls):
+        """
+        Retrieves all active employees.
+        
+        :return: List of active Employee instances.
+        """
+        return cls.query.filter_by(is_active=True).all()
+
     @property
     def is_farmer(self):
         return False
@@ -67,5 +74,8 @@ class Employee(BaseModel, UserMixin):
 
     def __repr__(self):
         """Return a string representation of the instance."""
-        return f"< Employee(name={self.name}, "\
-               f"id={self.id}, job_type={self.job_type}) >"
+        return (
+            f"< Employee(name={self.name}, id={self.id}, "
+            f"job_type={self.job_type.type if self.job_type else 'N/A'}, "
+            f"is_active={self.is_active})>"
+        )

@@ -5,15 +5,12 @@ Routes for Farmer functionalities
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Farmer
 from flask import Blueprint, request, jsonify, abort
-from flask_jwt_extended import create_access_token, jwt_required,
-get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 # Blueprint setup
 farmer_bp = Blueprint('farmer_bp', __name__, url_prefix='/api/farmers')
 
 # Route 1: Register a new farmer
-
-
 @farmer_bp.route('/register', methods=['POST'])
 def register_farmer():
     """
@@ -22,16 +19,8 @@ def register_farmer():
     data = request.get_json()
 
     # Validate required fields
-    if not all(
-        field in data for field in [
-            'name',
-            'phone_number',
-            'email',
-            'password']):
-        abort(
-            400,
-            description="Missing required fields: name,
-            phone_number, email, password")
+    if not all(field in data for field in ['name', 'phone_number', 'email', 'password']):
+        abort(400, description="Missing required fields: name, phone_number, email, password")
 
     # Check if farmer already exists
     if Farmer.query.filter_by(email=data['email']).first():
@@ -50,8 +39,6 @@ def register_farmer():
     return jsonify(message="Farmer registered successfully"), 201
 
 # Route 2: Farmer login (authenticate and get token)
-
-
 @farmer_bp.route('/login', methods=['POST'])
 def login_farmer():
     """
@@ -73,8 +60,6 @@ def login_farmer():
     return jsonify(access_token=access_token), 200
 
 # Route 3: Get farmer's profile details
-
-
 @farmer_bp.route('/profile', methods=['GET'])
 @jwt_required()
 def get_farmer_profile():
@@ -97,8 +82,6 @@ def get_farmer_profile():
     ), 200
 
 # Route 4: Update farmer's profile details
-
-
 @farmer_bp.route('/profile', methods=['PUT'])
 @jwt_required()
 def update_farmer_profile():
@@ -113,26 +96,16 @@ def update_farmer_profile():
 
     data = request.get_json()
 
-    if 'name' in data:
-        farmer.name = data['name']
-    if 'phone_number' in data:
-        farmer.phone_number = data['phone_number']
-    if 'email' in data:
-        farmer.email = data['email']
-    if 'farm_name' in data:
-        farmer.farm_name = data['farm_name']
-    if 'location' in data:
-        farmer.location = data['location']
-    if 'total_acreage' in data:
-        farmer.total_acreage = data['total_acreage']
+    # Dynamically update the profile
+    for key, value in data.items():
+        if hasattr(farmer, key):
+            setattr(farmer, key, value)
 
     db.session.commit()
 
     return jsonify(message="Profile updated successfully"), 200
 
 # Route 5: Change password for farmer
-
-
 @farmer_bp.route('/change-password', methods=['PUT'])
 @jwt_required()
 def change_password():
