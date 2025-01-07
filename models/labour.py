@@ -16,6 +16,7 @@ class Labour(BaseModel):
 
     type = db.Column(db.String(128), nullable=False)
     description = db.Column(db.String(128), nullable=True)
+    rate = db.Column(db.Float, nullable=False)
     farmer_id = db.Column(db.String(128), db.ForeignKey('farmers.id'), nullable=False)
 
     # Composite unique constraint
@@ -23,7 +24,6 @@ class Labour(BaseModel):
 
     # Relationshhips
     employees = db.relationship('Employee', back_populates='job_type')
-    tasks = db.relationship('Task', back_populates='labour')
     farmer = db.relationship('Farmer', back_populates='labours')
 
     def __init__(self, *args, **kwargs):
@@ -40,11 +40,18 @@ class Labour(BaseModel):
             'id': self.id,
             'type': self.type,
             'description': self.description,
-            'farmer_id': self.farmer_id
+            'farmer_id': self.farmer_id,
+            'rate': self.rate
         }
 
     def __repr__(self):
         """
         Returns a string representation of the Labour instance.
         """
-        return f" type={self.type})>"
+        return f"""<Labour(
+            type={self.type},
+            description={self.description},
+            farmer_id={self.farmer_id},
+            rate={self.rate}
+            
+        )>"""

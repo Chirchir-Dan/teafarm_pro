@@ -162,6 +162,7 @@ def record_production():
             weight = production_entry.weight.data
             rate = production_entry.rate.data or latest_rate
             date = form.plucking_date.data
+            farmer_id=current_user.id
 
             # If no rate is provided, use the most recent rate
             if rate is None:
@@ -187,9 +188,8 @@ def record_production():
                 employee_id=employee.id,
                 date=date,
                 weight=weight,
-                # Use the rate entered by the farmer
-                # or the most recent rate""
-                rate=rate
+                rate=rate,
+                farmer_id=farmer_id
             )
 
             db.session.add(production)
@@ -347,7 +347,6 @@ def view_production():
         title='View Production'
     )
 
-
 @farmer_bp.route('/inventory', methods=['GET', 'POST'])
 @login_required
 def manage_inventory():
@@ -356,54 +355,76 @@ def manage_inventory():
     edit_form = EditInventoryForm()
     delete_form = DeleteInventoryForm()
 
+    farmer_id = current_user.id
+
+    # Helper function to add an inventory item
+    def add_inventory_item(item_name, quantity):
+        try:
+            existing_item = Inventory.query.filter_by(item_name=item_name, farmer_id=farmer_id).first()
+            if existing_item:
+                flash(f'Item "{item_name}" already exists. Please use the update option to modify its quantity.', 'warning')
+            else:
+                new_inventory = Inventory(item_name=item_name, quantity=quantity, farmer_id=farmer_id)
+                db.session.add(new_inventory)
+                db.session.commit()
+                flash(f'Inventory item "{item_name}" added successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()  # Rollback any changes if an error occurs
+            flash(f"Error adding inventory: {str(e)}", 'danger')
+
+    # Helper function to update inventory quantity
+    def update_inventory_quantity(item_id, quantity):
+        try:
+            inventory = Inventory.query.get(item_id)
+            if inventory and inventory.farmer_id == farmer_id:
+                if inventory.quantity != quantity:
+                    inventory.quantity = quantity
+                    db.session.commit()
+                    flash(f'Quantity of {inventory.item_name} updated successfully!', 'success')
+                else:
+                    flash(f'Quantity of {inventory.item_name} is already {inventory.quantity}. No update needed.', 'info')
+            else:
+                flash(f'Inventory item not found or permission denied.', 'danger')
+        except Exception as e:
+            db.session.rollback()  # Rollback in case of error
+            flash(f"Error updating inventory: {str(e)}", 'danger')
+
+    # Helper function to delete an inventory item
+    def delete_inventory_item(item_id):
+        try:
+            inventory = Inventory.query.get(item_id)
+            if inventory and inventory.farmer_id == farmer_id:
+                db.session.delete(inventory)
+                db.session.commit()
+                flash(f'Inventory item "{inventory.item_name}" deleted successfully.', 'success')
+            else:
+                flash(f'Inventory item not found or permission denied.', 'danger')
+        except Exception as e:
+            db.session.rollback()  # Rollback in case of error
+            flash(f"Error deleting inventory item: {str(e)}", 'danger')
+
+    # Add Inventory
     if add_form.validate_on_submit():
-        # Adding new inventory item
         item_name = add_form.item_name.data
         quantity = add_form.quantity.data
-
-        existing_item = Inventory.query.filter_by(item_name=item_name).first()
-
-        if existing_item:
-            flash(f'Item {item_name} already exists.\
-                    Please use the update option to modify\
-                    its quantity.', 'warning')
-        else:
-            new_inventory = Inventory(item_name=item_name,
-                                      quantity=quantity)
-            db.session.add(new_inventory)
-            db.session.commit()
-            flash('Inventory item added successfully!', 'success')
-
+        add_inventory_item(item_name, quantity)
         return redirect(url_for('farmer_bp.manage_inventory'))
 
-    if edit_form.validate_on_submit() and\
-            request.form.get('edit_submit'):
+    # Edit Inventory
+    if edit_form.validate_on_submit() and request.form.get('edit_submit'):
         item_id = edit_form.item_id.data
         quantity = edit_form.quantity.data
-
-        inventory = Inventory.query.get(item_id)
-        if inventory:
-            inventory.quantity = quantity
-            db.session.commit()
-            flash(f'Quantity of {inventory.item_name} updated\
-                    successfully!', 'success')
-
+        update_inventory_quantity(item_id, quantity)
         return redirect(url_for('farmer_bp.manage_inventory'))
 
+    # Delete Inventory
     if delete_form.validate_on_submit():
         item_id = delete_form.item_id.data
-        inventory = Inventory.query.get(item_id)
-        if inventory:
-            db.session.delete(inventory)
-            db.session.commit()
-            flash('Inventory item deleted successfully.',
-                  'success')
-        else:
-            flash('Inventory item not found.', 'danger')
-
+        delete_inventory_item(item_id)
         return redirect(url_for('farmer_bp.manage_inventory'))
 
-    inventories = Inventory.query.paginate(page=page, per_page=10)
+    # Pagination and Render
+    inventories = Inventory.query.filter_by(farmer_id=farmer_id).paginate(page=page, per_page=10)
     return render_template('farmer/inventory.html',
                            add_form=add_form, edit_form=edit_form,
                            delete_form=delete_form, inventories=inventories)
@@ -416,19 +437,34 @@ def expenses():
     form = LogExpenseForm()
     form.category.choices = [(labour.id, labour.type) for
                              labour in Labour.query.all()]
-    if form.validate_on_submit():
-        # Handle logging expenses logic
-        labour_instance = Labour.query.get(form.category.data)
-        new_expense = Expense(category=labour_instance,
-                              description=form.description.data,
-                              amount=form.amount.data,
-                              date=form.date.data
-                              )
-        db.session.add(new_expense)
-        db.session.commit()
 
-        flash('Expense logged successfully!', 'success')
-        return redirect(url_for('farmer_bp.expenses'))
+    if not form.category.choices:
+        flash('No labour categories available. Please add categories first.', 'warning')
+        return redirect(url_for('farmer_bp.dashboard'))
+
+    if form.validate_on_submit():
+        labour_instance = Labour.query.get(form.category.data)
+        
+        if not labour_instance:
+            flash('Invalid labour category selected.', 'error')
+            return redirect(url_for('farmer_bp.expenses'))
+
+        new_expense = Expense(
+            category=labour_instance,
+            description=form.description.data,
+            amount=form.amount.data,
+            date=form.date.data,
+            farmer_id=current_user.id
+        )
+        try:
+            db.session.add(new_expense)
+            db.session.commit()
+            flash('Expense logged successfully!', 'success')
+            return redirect(url_for('farmer_bp.expenses'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while logging the expense. Please try again.', 'error')
 
     return render_template('farmer/expenses.html', form=form)
 
@@ -458,41 +494,54 @@ def add_employee():
     password = data.get('password')
     job_type_id = data.get('job_type')
 
-    if not name or not phone_number or not password or not\
-            job_type_id:
-        return jsonify({'status': 'error', 'message':
-                        'All fields except email are required'}), 400
+    if not all([name, phone_number, password, job_type_id]):
+        return jsonify({
+            'status': 'error',
+            'message': 'Please fill the required sections'}), 400
 
-    existing_employee = Employee.query.filter_by(
-        phone_number=phone_number).first()
-    if existing_employee:
-        return jsonify({'status': 'error', 'message': 'An\
-                employee with this phone number already exists.'})
+    if Employee.query.filter_by(phone_number=phone_number).first():
+        return jsonify({
+            'status': 'error',
+            'message': 'An employee with this phone number already exists.'
+        }), 400
 
     job_type = Labour.query.get(job_type_id)
-
     if not job_type:
-        return jsonify({'status': 'error', 'message':
-                        'Invalid job type'}), 400
+        return jsonify({
+            'status': 'error',
+            'message': 'Invalid job type'
+        }), 400
 
-    # Hash the password
-    password_hash = generate_password_hash(password)
+    try:
+        # Hash the password
+        password_hash = generate_password_hash(password)
 
-    # Create new Employee object
-    new_employee = Employee(
-        name=name,
-        phone_number=phone_number,
-        email=email,
-        password_hash=password_hash,
-        job_type=job_type
-    )
+        # Create new Employee object
+        new_employee = Employee(
+            name=name,
+            phone_number=phone_number,
+            email=email,
+            password_hash=password_hash,
+            job_type=job_type,
+            farmer_id=current_user.id
+        )
 
-    db.session.add(new_employee)
-    db.session.commit()
+        db.session.add(new_employee)
+        db.session.commit()
 
-    return jsonify(
-        {'status': 'success', 'message': 'Employee added\
-                successfully!'}), 201
+        return jsonify({
+            'status': 'success',
+            'message': 'Employee added successfully!'
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to add employee. Please try again'
+        }), 500
+
+
 
 
 @farmer_bp.route('/update_employee/<employee_id>/',
@@ -584,21 +633,34 @@ def create_labour():
     """Create new labour types and rates"""
     form = LabourForm()
     if form.validate_on_submit():
-        labour_type = form.labour_type.data
+        labour_type = form.labour_type.data.strip()
+        description = form.description.data.strip()
         rate = form.rate.data
-
-        # Check if labour type already exists
-        existing_labour = Labour.query.filter_by(type=labour_type).first()
+        farmer_id = current_user.id
+        
+        existing_labour = Labour.query.filter_by(type=labour_type,
+                farmer_id=farmer_id).first()
         if existing_labour:
             flash('Labour type already exists.', 'error')
             return redirect(url_for('farmer_bp.create_labour'))
 
-        # Create new labour entry
-        new_labour = Labour(type=labour_type, rate=rate)
-        db.session.add(new_labour)
-        db.session.commit()
-        flash('Labour type created successfully!', 'success')
-        return redirect(url_for('farmer_bp.manage_labour'))
+        try:
+            new_labour = Labour(
+                type=labour_type,
+                description=description,
+                rate=rate,
+                farmer_id=farmer_id
+            )
+            db.session.add(new_labour)
+            db.session.commit()
+            
+            flash("Labour type '{labour_type}' created successfully!", "success")
+            return redirect(url_for('farmer_bp.dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occured while creating the labour type: {str(e)}",
+                    "error")
+            return redirect(url_for('farmer_bp.create_labour'))
 
     return render_template('farmer/create_labour.html', form=form)
 

@@ -4,7 +4,7 @@ from wtforms import StringField, PasswordField, SelectField,\
     FormField, DecimalField, TextAreaField, IntegerField,\
     HiddenField
 from wtforms.validators import DataRequired, Email, Length,\
-    EqualTo, NumberRange, Optional
+    EqualTo, NumberRange, Optional, Regexp
 
 from models.employee import Employee
 from models import db
@@ -47,19 +47,21 @@ class FarmerSignUpForm(FlaskForm):
 
 class FarmerSignInForm(FlaskForm):
     """Implements farmer sign in form"""
-    email = StringField(
-        'Email',
+    phone_number = StringField(
+        'Phone Number',
         validators=[
             DataRequired(),
-            Email(),
-            Length(
-                max=128)])
+            Length(min=10, max=15),
+            Regexp(r'^\+?1?\d{9,15}$', message="Invalid phone number format")
+        ]
+    )
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Sign In')
 
 
 class LabourForm(FlaskForm):
     labour_type = StringField('Labour Type', validators=[DataRequired()])
+    description = StringField('Description', validators=[Optional(), Length(max=128)])
     rate = DecimalField('Rate', places=2, validators=[DataRequired()])
     submit = SubmitField('Submit')
 

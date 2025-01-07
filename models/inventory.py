@@ -13,22 +13,19 @@ class Inventory(BaseModel):
     Model for tracking inventory in the TeaFarm Pro application.
 
     Attributes:
-        id (int): Primary key of the inventory item.
         item_name (str): Name of the inventory item.
         quantity (float): Quantity of the inventory item.
-        date_added (datetime): Timestamp when inventory was added.
-        date_updated (datetime): Timestamp of when the inventory
-        was last updated.
+        farmer_id (int): Foreign key referencing the Farmer responsible for this inventory.
     """
     __tablename__ = 'inventories'
 
     item_name = db.Column(db.String(255), nullable=False)
     # Changed to Float for decimal values
     quantity = db.Column(db.Float, nullable=False, default=0)
-    date_added = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        nullable=False)
+
+    farmer_id = db.Column(db.String(60), db.ForeignKey('farmers.id'),
+            nullable=False)
+    farmer = db.relationship('Farmer', backref=db.backref('inventories', lazy=True))
 
     def __repr__(self):
         """

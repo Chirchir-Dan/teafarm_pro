@@ -13,15 +13,17 @@ class Farmer(BaseModel, UserMixin):
     __tablename__ = 'farmers'
 
     name = db.Column(db.String(128), nullable=False)
-    phone_number = db.Column(db.String(10), nullable=False, unique=True)
+    phone_number = db.Column(db.String(10), nullable=False, unique=True, index=True)
     email = db.Column(db.String(128), nullable=False, unique=True)
     farm_name = db.Column(db.String(128), nullable=True)
     location = db.Column(db.String(128), nullable=True)
     total_acreage = db.Column(db.Float, nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
 
+    # Relationships
     employees = db.relationship('Employee', back_populates='farmer')
     labours = db.relationship('Labour', back_populates='farmer')
+    production_records = db.relationship("ProductionRecord", back_populates="farmer")
 
     def __init__(self, *args, **kwargs):
         """

@@ -40,7 +40,7 @@
             <th scope="col">#</th>
             <th scope="col">Item Name</th>
             <th scope="col">Quantity</th>
-            <th scope="col">Date Added</th>
+            <th scope="col">Created At</th>
             <th scope="col">Last Updated</th>
             <th scope="col">Actions</th>
           </tr>
@@ -51,7 +51,7 @@
             <th scope="row">{{ loop.index + inventories.per_page * (inventories.page - 1) }}</th>
             <td>{{ inventory.item_name }}</td>
             <td>{{ inventory.quantity }}</td>
-            <td>{{ inventory.date_added.strftime('%Y-%m-%d') }}</td>
+            <td>{{ inventory.created_at.strftime('%Y-%m-%d') }}</td>
             <td>{{ inventory.updated_at.strftime('%Y-%m-%d') }}</td>
             <td>
               <!-- Edit Button triggers the Edit Modal -->

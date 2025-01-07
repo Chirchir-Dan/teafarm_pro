@@ -8,7 +8,6 @@ from flask_login import UserMixin
 from models.base_model import BaseModel, db
 from sqlalchemy.orm import relationship
 from models.labour import Labour
-from models.task import Task
 from models.production import ProductionRecord
 
 class Employee(BaseModel, UserMixin):
@@ -28,7 +27,6 @@ class Employee(BaseModel, UserMixin):
 
     productions = db.relationship('ProductionRecord', back_populates='employee')
     job_type = db.relationship('Labour', back_populates='employees')
-    tasks = relationship('Task', back_populates='employee', overlaps="tasks, employees")
     farmer = relationship('Farmer', back_populates='employees')
 
     def __init__(self, *args, **kwargs):

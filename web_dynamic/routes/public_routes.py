@@ -41,7 +41,7 @@ def signin():
 
     form = FarmerSignInForm()
     if form.validate_on_submit():
-        user = Farmer.query.filter_by(email=form.email.data).first()
+        user = Farmer.query.filter_by(phone_number=form.phone_number.data).first()
         if user and user.check_password(form.password.data):
             login_user(user)
             return redirect(url_for('public_bp.index'))
