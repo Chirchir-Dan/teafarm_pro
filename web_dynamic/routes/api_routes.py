@@ -277,15 +277,16 @@ def create_labour():
         data = request.json
         current_farmer_id = get_jwt_identity()
 
-        if not data or not data.get('type'):
-            return jsonify({"Field 'type' is required."}), 400
+        if not data or not data.get('type') or not data.get('rate'):
+            return jsonify({"Fields 'type', 'rate' are required."}), 400
         
         if Labour.query.filter_by(type=data['type'], farmer_id=current_farmer_id).first():
             return jsonify({"error": "Labour type already exists."}), 409
-        
+
         new_labour = Labour(
             type=data['type'],
-            description=data.get('description'),
+            description=data['description'],
+            rate=data['rate'],
             farmer_id=current_farmer_id
         )
         db.session.add(new_labour)
@@ -322,6 +323,7 @@ def update_labour(labour_id):
         
         labour.type = data['type']
         labour.description = data.get('description', labour.description)
+        labour.rate = data.get('rate', labour.rate)
         db.session.commit()
 
         return jsonify({"message": "Labour type updated successfully.", "labour": labour.to_dict()}), 200
