@@ -225,65 +225,35 @@ def get_weeks_of_year(year):
 
     return weeks
 
-# In farmer_routes.py
-
-
 @farmer_bp.route('/view_production', methods=['GET', 'POST'])
 @login_required
 def view_production():
     form = ProductionFilterForm()
-
     current_date = datetime.today()
     current_year = current_date.year
     current_month = current_date.month
 
-    # Set choices dynamically
-    form.year.choices = [(str(y), str(y)) for
-                         y in range(current_year, current_year - 10, -1)]
-    form.month.choices = [
-        (str(m),
-         datetime(
-            current_year,
-            m,
-            1).strftime('%B')) for m in range(
-            1,
-            13)]
+    # Set dynamic choices for form
+    form.year.choices = [(str(y), str(y)) for y in range(current_year, current_year - 10, -1)]
+    form.month.choices = [(str(m), datetime(current_year, m, 1).strftime('%B')) for m in range(1, 13)]
     weeks = get_weeks_of_year(current_year)
     form.week.choices = weeks
 
-    # Set choices dynamically
-    form.year.choices = [(str(y), str(y)) for
-                         y in range(current_year, current_year - 10, -1)]
-    form.month.choices = [(str(m),
-                           datetime(current_year, m, 1).strftime('%B')) for
-                          m in range(1, 13)]
-    weeks = get_weeks_of_year(current_year)
-    form.week.choices = weeks
-
-    # Calculate current week for default week
-    current_week_start = current_date - \
-        timedelta(days=(current_date.weekday() + 1) % 7)
+    # Default week setup
+    current_week_start = current_date - timedelta(days=(current_date.weekday() + 1) % 7)
     current_week_end = current_week_start + timedelta(days=6)
-    current_week_str = (
-        f"{current_week_start.strftime('%Y-%m-%d')} "
-        f"to {current_week_end.strftime('%Y-%m-%d')}"
-    )
-    default_week = next(
-        (week[0] for week in weeks if week[0] == current_week_str),
-        weeks[0][0])
+    current_week_str = f"{current_week_start.strftime('%Y-%m-%d')} to {current_week_end.strftime('%Y-%m-%d')}"
+    default_week = next((week[0] for week in weeks if week[0] == current_week_str), weeks[0][0])
 
-    # Set defaults on GET request (initial load)
     if request.method == 'GET':
         form.year.process_data(str(current_year))
         form.month.process_data(str(current_month))
-
         form.week.process_data(default_week)
 
     total_weight = 0
     total_amount = 0
     production_records = []
 
-    # Handle form submission
     if form.validate_on_submit():
         selected_date = form.date.data
         filter_by = form.filter_by.data
@@ -291,51 +261,40 @@ def view_production():
         selected_month = form.month.data
         selected_week = form.week.data
 
-        # Prevent future date selection
+        # Prevent future dates
         if selected_date > datetime.today().date():
             flash("Future dates are not allowed!", "danger")
         else:
             query = ProductionRecord.query
 
-            if filter_by == 'day' and selected_date:
-                production_records = query.filter_by(date=selected_date).all()
+            try:
+                if filter_by == 'day' and selected_date is not None:
+                    production_records = query.filter_by(date=selected_date).all()
+                elif filter_by == 'week' and selected_week:
+                    start_of_week, end_of_week = selected_week.strip().split(" to ")
+                    start_of_week = datetime.strptime(start_of_week.strip(), '%Y-%m-%d').date()
+                    end_of_week = datetime.strptime(end_of_week.strip(), '%Y-%m-%d').date()
+                    production_records = query.filter(
+                        ProductionRecord.date >= start_of_week,
+                        ProductionRecord.date <= end_of_week
+                    ).all()
+                elif filter_by == 'month' and selected_month and selected_year:
+                    production_records = query.filter(
+                        db.extract('month', ProductionRecord.date) == int(selected_month),
+                        db.extract('year', ProductionRecord.date) == int(selected_year)
+                    ).all()
+                elif filter_by == 'year' and selected_year:
+                    production_records = query.filter(
+                        db.extract('year', ProductionRecord.date) == int(selected_year)
+                    ).all()
+                else:
+                    flash("Please select valid filtering criteria.", "danger")
+            except ValueError:
+                flash("Invalid date format. Please try again.", "danger")
 
-            elif filter_by == 'week' and selected_week:
-                start_of_week, end_of_week =\
-                    selected_week.split(" to ")
-                start_of_week = datetime.strptime(start_of_week,
-                                                  '%Y-%m-%d').date()
-                end_of_week = datetime.strptime(end_of_week,
-                                                '%Y-%m-%d').date()
-                production_records = query.filter(
-                    ProductionRecord.date >= start_of_week,
-                    productionRecord.date <= end_of_week).all()
+            total_weight = sum(record.weight for record in production_records)
+            total_amount = sum(record.amount_paid for record in production_records)
 
-            elif filter_by == 'month' and selected_month and selected_year:
-                production_records = query.filter(
-                    db.extract('month', ProductionRecord. date) ==
-                    int(selected_month),
-                    db.extract('year', ProductionRecord.date) ==
-                    int(selected_year)
-                ).all()
-
-            elif filter_by == 'year' and selected_year:
-                production_records = query.filter(
-                    db.extract('year', ProductionRecord.date) ==
-                    int(selected_year)
-                ).all()
-
-            else:
-                flash("Please select valid filtering\
-                        criteria.", "danger")
-
-            # Calculate total weight and amount paid
-            total_weight = sum(record.weight for record in
-                               production_records)
-            total_amount = sum(record.amount_paid for
-                               record in production_records)
-
-    # Pass datetime to the template
     return render_template(
         'farmer/view_production.html',
         form=form,
@@ -346,6 +305,8 @@ def view_production():
         mode='view',
         title='View Production'
     )
+
+
 
 @farmer_bp.route('/inventory', methods=['GET', 'POST'])
 @login_required
