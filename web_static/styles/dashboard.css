@@ -258,7 +258,7 @@ section {
 }
 
 .flash.success {
-    background-color: #28a745; /* Green for success */
+    background-color: #0c4619; /* Green for success */
 }
 
 .flash.danger {
@@ -284,6 +284,23 @@ section {
     opacity: 1;
 }
 
+.flash .close-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+
+.flash .close-btn:hover {
+    color: gold;
+}
+
+
 .alert-container {
   margin-top: 20px;
 }
@@ -305,4 +322,72 @@ section {
   color: #721c24;
   border-color: #f5c6cb;
 }
+
+/* Flex container for buttons */
+.button-row {
+    display: flex;
+    justify-content: space-between; /* Distributes buttons evenly */
+    margin-top: 20px; /* Adds spacing above the buttons */
+    gap: 15px; /* Adds space between buttons */
+}
+
+.button-row button {
+    flex: 1;
+    max-width: 200px; /* Optional: limits button width */
+    padding: 12px 20px;
+    background-color: #568203;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.button-row button:hover {
+    background-color: #568203;
+    transform: scale(1.05);
+}
+
+.d-flex.justify-content-center{
+    display: flex; /* Ensure the container behaves as a flexbox */
+    flex-direction: row;
+    width: 100%;
+    align-items: center; /* Vertically align items */
+    gap: 0px; /* Space between pagination elements */
+    padding: 0; /* Remove extra padding */
+    background: none; /* Remove any default background color */
+}
+
+.pagination {
+    display: flex; /* Ensure buttons are horizontally aligned */
+    flex-direction: row;
+    list-style: none;
+    padding: 0;
+    margin: 0; 
+    align-items: center;
+}
+
+.pagination .page-link {
+    display: inline-block;
+    margin: 5px;
+    padding: 5px 10px; 
+    color: rgb(54, 117, 17);
+    text-decoration: none; 
+    font-size: 14px;
+    border: #dc3545;
+    transition: color 0.3s ease, transform 0.3s ease; /* Smooth hover effects */
+}
+
+.pagination .page-link:hover {
+    color: rgb(54, 117, 17); 
+    transform: scale(1.1); /* Subtle zoom effect */
+}
+
+/* Disabled buttons */
+.pagination .page-item.disabled .page-link {
+    color: rgb(54, 117, 17);  */
+    cursor: :active;
+}
+
 

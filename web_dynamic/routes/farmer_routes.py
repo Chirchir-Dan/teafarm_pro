@@ -35,6 +35,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash
 from sqlalchemy import func
 from math import ceil
+from flask_paginate import Pagination, get_page_parameter
 
 farmer_bp = Blueprint('farmer_bp', __name__)
 
@@ -594,20 +595,20 @@ def create_labour():
     """Create new labour types and rates"""
     form = LabourForm()
     if form.validate_on_submit():
-        labour_type = form.labour_type.data.strip()
+        type = form.type.data.strip()
         description = form.description.data.strip()
         rate = form.rate.data
         farmer_id = current_user.id
         
-        existing_labour = Labour.query.filter_by(type=labour_type,
+        existing_labour = Labour.query.filter_by(type=type,
                 farmer_id=farmer_id).first()
         if existing_labour:
-            flash('Labour type already exists.', 'error')
-            return redirect(url_for('farmer_bp.create_labour'))
+            flash(f"Labour type '{type}' already exists.", 'error')
+            return redirect(url_for('farmer_bp.manage_labour'))
 
         try:
             new_labour = Labour(
-                type=labour_type,
+                type=type,
                 description=description,
                 rate=rate,
                 farmer_id=farmer_id
@@ -615,40 +616,66 @@ def create_labour():
             db.session.add(new_labour)
             db.session.commit()
             
-            flash("Labour type '{labour_type}' created successfully!", "success")
-            return redirect(url_for('farmer_bp.dashboard'))
+            flash(f"Labour type '{type}' created successfully!", "success")
+            return redirect(url_for('farmer_bp.manage_labour'))
         except Exception as e:
             db.session.rollback()
-            flash(f"An error occured while creating the labour type: {str(e)}",
-                    "error")
+            flash(f"An error occured while creating the labour type: {str(e)}", "error")
             return redirect(url_for('farmer_bp.create_labour'))
+        
 
-    return render_template('farmer/create_labour.html', form=form)
+        # If there are errors, display them to the user
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(error, 'error')
+
+    return render_template('farmer/labour_manage.html', form=form)
 
 
-@farmer_bp.route('/manage_labour', methods=['GET', 'POST'])
+@farmer_bp.route('/manage_labour', methods=['GET'])
 @login_required
 def manage_labour():
     """Manage existing labour types"""
     form = LabourForm()
-    labours = Labour.query.all()
+    farmer_id = current_user.id
 
-    if form.validate_on_submit():
-        labour_type = form.labour_type.data
-        rate = form.rate.data
+    # Pagination setup
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    per_page = 10
 
-        # Check if labour type exists
-        existing_labour = Labour.query.filter_by(type=labour_type).first()
-        if existing_labour:
-            # Update existing labour type
-            existing_labour.rate = rate
-            db.session.commit()
-            flash('Labour type updated successfully!', 'success')
-            return redirect(url_for('farmer_bp.manage_labour'))
-
-        flash('Labour type not found.', 'error')
+    labour_query = Labour.query.filter_by(farmer_id=farmer_id).order_by(Labour.updated_at.desc())
+    labours = labour_query.paginate(page=page, per_page=per_page, error_out=False)
 
     return render_template(
-        'farmer/manage_labour.html',
+        'farmer/labour_manage.html',
         form=form,
-        labours=labours)
+        labours=labours.items,
+        pagination=labours,
+    )
+
+@farmer_bp.route('/edit_labour/<string:labour_id>', methods=['GET', 'POST'])
+@login_required
+def edit_labour(labour_id):
+    """Edit an existing labour type"""
+    labour = Labour.query.filter_by(id=labour_id, farmer_id=current_user.id).first_or_404()
+    form = LabourForm(obj=labour)
+    if form.validate_on_submit():
+        labour.type = form.type.data.strip()
+        labour.rate = form.rate.data
+        labour.description = form.description.data
+        db.session.commit()
+        flash(f"Labour type '{labour.type}' updated successfully!", "success")
+        return redirect(url_for('farmer_bp.manage_labour'))
+    return render_template('farmer/labour_update.html', form=form, labour=labour)
+
+@farmer_bp.route('/delete_labour/<string:labour_id>', methods=['POST'])
+@login_required
+def delete_labour(labour_id):
+    """Delete a labour type"""
+    labour = Labour.query.filter_by(id=labour_id, farmer_id=current_user.id).first_or_404()
+    db.session.delete(labour)
+    db.session.commit()
+    flash(f"Labour type '{labour.type}' deleted successfully!", "success")
+    return redirect(url_for('farmer_bp.manage_labour'))
+
+

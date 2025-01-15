@@ -5,8 +5,8 @@
   <form method="POST" action="{{ url_for('farmer_bp.create_labour') }}">
     {{ form.hidden_tag() }}
     <div>
-      {{ form.labour_type.label }}<br>
-      {{ form.labour_type(size=32) }}
+      {{ form.type.label }}<br>
+      {{ form.type(size=32) }}
     </div>
     <div>
       {{ form.description.label }}<br>
