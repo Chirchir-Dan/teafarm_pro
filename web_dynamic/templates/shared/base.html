@@ -29,15 +29,10 @@
 
 		    <li><a href="{{ url_for('farmer_bp.list_employees') }}">Employees</a></li>
                     
-		    <!-- Dropdown for Labour -->
-		    <li class="dropdown">
-                        <a href="javascript:void(0)" class="dropbtn">Labour</a>
-                        <div class="dropdown-content">
-                            <a href="{{ url_for('farmer_bp.create_labour') }}">Add Labour</a>
-			    <a href="{{ url_for('farmer_bp.assign_task') }}">Assign Task</a>
-		            <a href="{{ url_for('farmer_bp.manage_labour') }}">Manage Labour</a>
-                        </div>
-                    </li>
+            <li>
+                <a href="{{ url_for('farmer_bp.manage_labour') }}">Labour Types</a>
+            </li>
+            
 
 		    <!-- Dropdown for Account -->
                     <li class="dropdown">

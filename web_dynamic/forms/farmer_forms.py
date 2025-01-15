@@ -60,10 +60,16 @@ class FarmerSignInForm(FlaskForm):
 
 
 class LabourForm(FlaskForm):
-    labour_type = StringField('Labour Type', validators=[DataRequired()])
-    description = StringField('Description', validators=[Optional(), Length(max=128)])
+    type = StringField('Labour Type', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=128)])
     rate = DecimalField('Rate', places=2, validators=[DataRequired()])
     submit = SubmitField('Submit')
+
+    def validate_labour_type(self, field):
+        """Ensure that the labour type is unique."""
+        type = field.data.strip()
+        if Labour.query.filter_by(type=type).first():
+            raise ValidationError(f"Labour type '{type}' already exists.")    
 
 
 class AssignTaskForm(FlaskForm):
