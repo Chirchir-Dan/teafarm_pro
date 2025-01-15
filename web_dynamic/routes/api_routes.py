@@ -6,6 +6,7 @@ from models.farmer import Farmer
 from sqlalchemy.exc import IntegrityError
 from models.employee import Employee
 from models.labour import Labour
+from models.production import ProductionRecord
 from models import db
 
 # Initialize Blueprint
@@ -369,6 +370,118 @@ def delete_labour(labour_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "An unexpected error occurred."}), 500
+
+
+@api_bp.route('/record_production_data', methods=['POST'])
+@jwt_required()
+def record_production_data():
+    """Route for recording production."""
+    try:
+        data = request.json
+        current_farmer_id = get_jwt_identity()
+
+        if not data or not data.get('weight') or not data.get('employee_id') or not data.get('date'):
+            return jsonify({"error": "Fields 'weight', and 'employee' are required."}), 400
+
+        # if rate is not provided, get from employee's job type
+        if not data.get('rate'):
+            employee = Employee.query.filter_by(id=data['employee_id'], farmer_id=current_farmer_id).first()
+            if not employee:
+                return jsonify({"error": "Employee not found."}), 404
+            data['rate'] = employee.job_type.rate
+
+        new_production = ProductionRecord(
+            employee_id=data.get('employee_id'),
+            weight=data.get('weight'),
+            rate=data.get('rate'),
+            date=data.get('date'),
+            farmer_id=current_farmer_id
+        )
+
+        db.session.add(new_production)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Production recorded successfully.",
+            "production": new_production.to_dict()
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An unexpected error occurred.{e}"}), 500
+
+
+@api_bp.route('/production_data/<uuid:production_id>', methods=['PUT'])
+@jwt_required()
+def update_production_data(production_id):
+    """Route for updating production data."""
+    try:
+        data = request.json
+        current_farmer_id = get_jwt_identity()
+
+        if not data or not data.get('weight') or not data.get('employee_id') or not data.get('date'):
+            return jsonify({"error": "Fields 'weight', 'date' and 'employee' are required."}), 400
+
+        production = ProductionRecord.query.filter(ProductionRecord.id==str(production_id), ProductionRecord.farmer_id==current_farmer_id).first()
+
+        if not production:
+            return jsonify({"error": "Production record not found."}), 404
+
+        # if rate is not provided, get from employee's job type
+        if not data.get('rate'):
+            employee = Employee.query.filter_by(id=data['employee_id'], farmer_id=current_farmer_id).first()
+            if not employee:
+                return jsonify({"error": "Employee not found."}), 404
+            data['rate'] = employee.job_type.rate
+
+        production.employee_id = data['employee_id']
+        production.weight = data['weight']
+        production.rate = data['rate']
+        production.date = data['date']
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Production record updated successfully.",
+            "production": production.to_dict()
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An unexpected error occurred. {e}"}), 500
+
+
+@api_bp.route('/fetch_production_data', methods=['GET'])
+@jwt_required()
+def fetch_production_data():
+    """Route for fetching production data."""
+    try:
+        current_farmer_id = get_jwt_identity()
+        productions = ProductionRecord.query.filter_by(farmer_id=current_farmer_id).all()
+
+        return jsonify({
+            "productions": [production.to_dict() for production in productions]
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred. {e}"}), 500
+
+
+@api_bp.route('/delete_production_data/<uuid:production_id>', methods=['DELETE'])
+@jwt_required()
+def delete_production_data(production_id):
+    """Route for deleting a production record."""
+    try:
+        current_farmer_id = get_jwt_identity()
+        production = ProductionRecord.query.filter(ProductionRecord.id==str(production_id), ProductionRecord.farmer_id==current_farmer_id).first()
+
+        if not production:
+            return jsonify({"error": "Production record not found."}), 404
+
+        db.session.delete(production)
+        db.session.commit()
+
+        return jsonify({"message": "Production record deleted successfully."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An unexpected error occurred. {e}"}), 500
 
 
 @api_bp.route('/logout', methods=['POST'])
