@@ -20,11 +20,10 @@ app = Flask(__name__, static_folder='../web_static')
 app.secret_key = secrets.token_hex(32)
 
 # Initialize SQLAlchemy
-password = quote(getenv("MYSQL_ROOT_PWD", ''))
-# app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://root:{password}@localhost/teafarm_dev_db'
+password = quote(getenv("TEAFARM_MYSQL_PWD", ''))
+# app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://{user}:{password}@{host}/{database}'
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    f"mysql+mysqldb://{getenv('TEAFARM_MYSQL_USER')}:{getenv('TEAFARM_MYSQL_PWD')}"
-    f"@{getenv('TEAFARM_MYSQL_HOST')}/{getenv('TEAFARM_MYSQL_DB')}"
+    f"mysql+mysqldb://{getenv('TEAFARM_MYSQL_USER')}:{password}@{getenv('TEAFARM_MYSQL_HOST')}/{getenv('TEAFARM_MYSQL_DB')}"
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)

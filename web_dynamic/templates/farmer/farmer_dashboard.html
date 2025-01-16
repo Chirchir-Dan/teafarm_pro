@@ -4,44 +4,67 @@
 {% block title %}Farmer Dashboard{% endblock %}
 
 {% block content %}
-<!-- Display flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="alert-container">
-          {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-<h1>Welcome, {{ farmer.name }}</h1>
+<!-- Welcome Section -->
+<section class="dashboard-welcome">
+    <div class="welcome-container">
+        <h1 class="greeting">Hello, {{ farmer.name }}!</h1>
+        <p>Your farm at a glance.</p>
+    </div>
+</section>
 
-<div class="dashboard-summary">
-    <div class="summary-card">
-        <h3>Total Expenses for {{ current_month }}</h3>
+<!-- Summary Cards Section -->
+<section class="dashboard-summary">
+    <div class="card">
+        <h2>Total Expenses</h2>
         <p>{{ total_expenses }} KSh</p>
+        <small>This Month</small>
     </div>
-
-    <div class="summary-card">
-        <h3>Total Tea Produced for {{ current_month }}</h3>
+    <div class="card">
+        <h2>Tea Produced</h2>
         <p>{{ total_tea_produced }} Kgs</p>
+        <small>This Month</small>
     </div>
-
-    <div class="summary-card">
-        <h3>Total Inventory Balance</h3>
+    <div class="card">
+        <h2>Inventory Balance</h2>
         <p>{{ total_inventory_balance }} Units</p>
+        <small>Current</small>
     </div>
-
-    <div class="summary-card">
-        <h3>Total Expenses for {{ current_year }}</h3>
+    <div class="card">
+        <h2>Yearly Expenses</h2>
         <p>{{ total_expenses_year }} KSh</p>
+        <small>This Year</small>
     </div>
-
-    <div class="summary-card">
-        <h3>Total Tea Produced for {{ current_year }}</h3>
+    <div class="card">
+        <h2>Yearly Production</h2>
         <p>{{ total_tea_produced_year }} Kgs</p>
+        <small>This Year</small>
     </div>
-</div>
+</section>
+
+<!-- Interactive Charts Section -->
+<section class="dashboard-charts">
+    <h2>Insights & Trends</h2>
+    <div class="chart-container">
+        <div class="chart">
+            <h3>Production Trends</h3>
+            <canvas id="productionTrendChart"></canvas>
+        </div>
+        <div class="chart">
+            <h3>Expense Breakdown</h3>
+            <canvas id="expenseBreakdownChart"></canvas>
+        </div>
+    </div>
+</section>
+
+<!-- Actions Section -->
+<section class="dashboard-actions">
+    <h2>Quick Actions</h2>
+    <div class="actions-container">
+        <a href="/assign-task" class="action-btn">Assign Tasks</a>
+        <a href="/record-production" class="action-btn">Record Production</a>
+        <a href="/inventory" class="action-btn">Manage Inventory</a>
+        <a href="/expenses" class="action-btn">Log Expenses</a>
+        <a href="/generate-report" class="action-btn">Generate Report</a>
+    </div>
+</section>
 {% endblock %}
