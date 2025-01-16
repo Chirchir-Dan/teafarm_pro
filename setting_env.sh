@@ -36,7 +36,7 @@ fi
 echo "Database setup completed successfully!"
 
 # Set PYTHONPATH to the current working directory
-export FLASK_APP="web_dynamic/app.py"
+export FLASK_APP="$PWD/web_dynamic/app.py"
 export PYTHONPATH="$PWD"
 
 export TEAFARM_MYSQL_USER="teafarm_dev"
