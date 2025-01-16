@@ -7,10 +7,19 @@
 <!-- Welcome Section -->
 <section class="dashboard-welcome">
     <div class="welcome-container">
-        <h1 class="greeting">Hello, {{ farmer.name }}!</h1>
-        <p>Your farm at a glance.</p>
+        <!-- Profile Picture (Circular) -->
+        <div class="profile-container">
+            <img src="{{ farmer.profile_picture or '/web_static/images/default_dp.png' }}" alt="Profile Picture" class="profile-icon">
+        </div>
+        <!-- Greeting Message -->
+        <div class="greeting-message">
+            <h1 class="greeting">Hello, {{ farmer.name }}!</h1>
+            <p>Your farm at a glance.</p>
+        </div>
     </div>
 </section>
+
+
 
 <!-- Summary Cards Section -->
 <section class="dashboard-summary">
@@ -68,3 +77,4 @@
     </div>
 </section>
 {% endblock %}
+

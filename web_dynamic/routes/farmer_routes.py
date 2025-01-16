@@ -43,7 +43,7 @@ farmer_bp = Blueprint('farmer_bp', __name__)
 @farmer_bp.route('/', methods=['GET'])
 def index():
     """Landing page"""
-    return render_template('shared/index.html')
+    return render_template('farmer/farmer_dashboard.html')
 
 
 @farmer_bp.route('/dashboard')

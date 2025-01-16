@@ -44,7 +44,7 @@ def signin():
         user = Farmer.query.filter_by(phone_number=form.phone_number.data).first()
         if user and user.check_password(form.password.data):
             login_user(user)
-            return redirect(url_for('public_bp.index'))
+            return redirect(url_for('farmer_bp.dashboard'))
     return render_template('farmer/farmer_signin.html', form=form)
 
 
