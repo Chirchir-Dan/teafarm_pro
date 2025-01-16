@@ -1,2 +1,7 @@
 venv/
 migrations/alembic.ini
+setup_error.log
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
