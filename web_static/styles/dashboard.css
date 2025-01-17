@@ -522,6 +522,7 @@ body {
     color: #333;
 }
 
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .dashboard-summary {
@@ -532,4 +533,62 @@ body {
         flex-direction: column;
     }
 }
+/* Welcome Section */
+.dashboard-welcome {
+    background-color: #568203; /* Green background */
+    color: white; /* White text color */
+    padding: 20px; /* Add padding around the section */
+    position: relative; /* Enable absolute positioning */
+}
 
+/* Align profile and message horizontally */
+.welcome-container {
+    display: flex; /* Align items horizontally */
+    align-items: center; /* Vertically align content */
+    justify-content: center; /* Center the container */
+    gap: 0px; /* Space between the profile icon and the message */
+    position: relative; /* Ensure proper positioning for responsive adjustments */
+}
+
+/* Profile Icon Styles */
+.profile-container {
+    position: absolute; /* Remove from normal flow */
+    left: 20px; /* Position it 20px from the left */
+    background-color: white; /* White background for the profile icon */
+    border-radius: 50%;
+    padding: 0px;
+    border: 3px solid gold; /* Gold border for the profile icon */
+}
+
+.profile-icon {
+    width: 75px; /* Adjust size */
+    height: 75px;
+    border-radius: 50%; /* Make the image circular */
+    object-fit: cover; /* Ensure the image covers the entire circle */
+}
+
+/* Greeting Message Styles */
+.greeting-message {
+    display: flex;
+    flex-direction: column; /* Stack the heading and paragraph */
+    justify-content: center; /* Vertically center the text */
+    text-align: center; /* Align text to the center */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .welcome-container {
+        flex-direction: column; /* Stack the icon and message vertically */
+        align-items: center; /* Center-align the icon and message */
+        padding: 10px; /* Add padding for smaller screens */
+    }
+
+    .profile-container {
+        position: static; /* Reset position */
+        margin-bottom: 10px; /* Add spacing below the icon */
+    }
+
+    .greeting-message {
+        text-align: center; /* Keep text centered */
+    }
+}
