@@ -5,3 +5,4 @@ setup_error.log
 __pycache__/
 *.pyo
 *.pyd
+.
