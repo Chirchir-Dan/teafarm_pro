@@ -69,11 +69,8 @@
 <section class="dashboard-actions">
     <h2>Quick Actions</h2>
     <div class="actions-container">
-        <a href="/assign-task" class="action-btn">Assign Tasks</a>
-        <a href="/record-production" class="action-btn">Record Production</a>
-        <a href="/inventory" class="action-btn">Manage Inventory</a>
-        <a href="/expenses" class="action-btn">Log Expenses</a>
-        <a href="/generate-report" class="action-btn">Generate Report</a>
+        <a href="{{ url_for('farmer_bp.view_production') }}" class="action-btn">Record Production</a>
+        <a href="{{ url_for('farmer_bp.expenses') }}" class="action-btn">Log Expenses</a>
     </div>
 </section>
 {% endblock %}

@@ -12,34 +12,27 @@
 <body>
     <nav>
         <ul>
+            <li style="height: 100%; display: flex; align-items: center;">
+                <a href="{{ url_for('public_bp.index') }}">
+                    <img src="{{ url_for('static', filename='images/no_bg_logo2.png.png') }}" alt="TeaFarm Pro Logo" style="height: 50px; padding: 0; margin: 0;">
+                </a>
+            </li>
             {% if current_user.is_authenticated %}
                 {% if current_user.is_farmer %}
-                    <li><a href="{{ url_for('farmer_bp.dashboard') }}">Dashboard</a></li>
-                    <!-- Dropdown for Production -->
-                    <li class="dropdown">
-                        <a href="javascript:void(0)" class="dropbtn">Production</a>
-                        <div class="dropdown-content">
-                            <a href="{{ url_for('farmer_bp.record_production') }}">Record Production</a>
-		            <a href="{{ url_for('farmer_bp.view_production') }}">View Production</a>
-                        </div>
-                    </li>
-
-                    <li><a href="{{ url_for('farmer_bp.manage_inventory') }}">Manage Inventory</a></li>
-                    <li><a href="{{ url_for('farmer_bp.expenses') }}">Log Expenses</a></li>
-
-		    <li><a href="{{ url_for('farmer_bp.list_employees') }}">Employees</a></li>
-                    
-            <li>
-                <a href="{{ url_for('farmer_bp.manage_labour') }}">Labour Types</a>
-            </li>
+                    <li><a href="{{ url_for('farmer_bp.dashboard') }}" class="{{ 'active' if request.endpoint == 'farmer_bp.dashboard' else '' }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('farmer_bp.view_production') }}" class="{{ 'active' if request.endpoint == 'farmer_bp.view_production' else '' }}">Production</a></li>
+                    <!-- <li><a href="{{ url_for('farmer_bp.manage_inventory') }}" class="{{ 'active' if request.endpoint == 'farmer_bp.manage_inventory' else '' }}">Manage Inventory</a></li> -->
+                    <li><a href="{{ url_for('farmer_bp.expenses') }}" class="{{ 'active' if request.endpoint == 'farmer_bp.expenses' else '' }}">Expenses</a></li>
+                    <li><a href="{{ url_for('farmer_bp.list_employees') }}" class="{{ 'active' if request.endpoint == 'farmer_bp.list_employees' else '' }}">Employees</a></li>     
+                    <li><a href="{{ url_for('farmer_bp.manage_labour') }}" class="{{ 'active' if request.endpoint == 'farmer_bp.manage_labour' else '' }}">Labour Types</a></li>
             
 
-		    <!-- Dropdown for Account -->
-                    <li class="dropdown">
-                        <a href="javascript:void(0)" class="dropbtn">Account</a>
+            <!-- Dropdown for Account -->
+                    <li class="dropdown ">
+                        <a href="javascript:void(0)" class="dropbtn" class="{{ 'active' if request.endpoint == 'farmer_bp.update_profile' else '' }}">Account</a>
                         <div class="dropdown-content">
-                            <a href="{{ url_for('farmer_bp.update_profile') }}">Update Profile</a>
-		            <a href="{{ url_for('farmer_bp.logout') }}">Logout</a>
+                            <a href="{{ url_for('farmer_bp.update_profile') }}" >Update Profile</a>
+                    <a href="{{ url_for('farmer_bp.logout') }}" class="{{ 'active' if request.endpoint == 'farmer_bp.logout' else '' }}">Logout</a>
                         </div>
                     </li>
 
@@ -48,20 +41,20 @@
                     <li><a href="{{ url_for('employee_bp.employee_dashboard') }}">Dashboard</a></li>
                     <li><a href="{{ url_for('public_bp.privacy_policy') }}">Privacy Policy</a></li>
                     <li><a href="{{ url_for('public_bp.terms_of_service') }}">Terms of Service</a></li>
-		    <li><a href="{{ url_for('public_bp.logout') }}">Logout</a></li>
+            <li><a href="{{ url_for('public_bp.logout') }}">Logout</a></li>
                 {% endif %}
             {% else %}
                 <li><a href="{{ url_for('public_bp.index') }}">Home</a></li>
 
                 <!-- Dropdown for Sign In -->
-		<!--<li class="dropdown">
+        <!--<li class="dropdown">
                     <a href="javascript:void(0)" class="dropbtn">Sign In</a>
                     <div class="dropdown-content">
-			<a href="{{ url_for('public_bp.signin', type='employee') }}">Sign in as Employee</a>
+            <a href="{{ url_for('public_bp.signin', type='employee') }}">Sign in as Employee</a>
                     </div>
-		</li>-->
+        </li>-->
 
-		<li><a href="{{ url_for('public_bp.signin', type='farmer') }}">Sign in</a></li>
+        <li><a href="{{ url_for('public_bp.signin', type='farmer') }}">Sign in</a></li>
 
 
                 <!-- Sign Up changed to Farmer Sign Up -->

@@ -15,6 +15,10 @@
     {% endwith %}
 <h1>View Production Records</h1>
 
+<form method="GET" action="{{ url_for('farmer_bp.record_production') }}">
+    <button type="submit" class="btn btn-success">Add Production</button>
+</form>
+
 <form method="POST">
     {{ form.hidden_tag() }}
 

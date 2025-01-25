@@ -196,7 +196,7 @@ def record_production():
             db.session.add(production)
         db.session.commit()
         flash('Production recorded successfully!', 'success')
-        return redirect(url_for('farmer_bp.record_production'))
+        return redirect(url_for('farmer_bp.view_production'))
 
     return render_template(
         'farmer/record_production.html',

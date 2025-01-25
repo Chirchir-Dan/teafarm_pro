@@ -42,6 +42,10 @@ nav ul li a {
     text-align: center;
     border-radius: 5px; /* Softens the button edges */
 }
+nav ul li a.active {
+    background-color: gold; /* Different background color for active tab */
+    color: #333; /* Different text color for active tab */
+}
 
 nav ul li a:hover {
     background-color: #466602; /* Slightly darker green on hover */
@@ -141,9 +145,8 @@ main {
 }
 
 h1 {
-    color: #568203; /* Matching color for headers */
-    border-bottom: 2px solid #568203; /* Underline for headers */
-    padding-bottom: 10px;
+    color: #568203; 
+    border-bottom: 2px solid #568203; 
     margin-bottom: 20px;
 }
 
@@ -432,17 +435,18 @@ body {
 }
 
 .card {
-    background-color: white;
+    background-color: rgb(255, 255, 255);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
     text-align: center;
 }
-
-.card h2 {
-    color: #568203;
-    margin: 0 0 10px;
+.card:hover {
+    background-color: #466602;
+    color: gold;
+    
 }
+
 
 .card p {
     font-size: 1.5rem;
@@ -451,7 +455,10 @@ body {
 }
 
 .card small {
-    color: #666;
+    color: black;
+}
+.card small:hover {
+    color: gold;
 }
 
 /* Insights & Charts Section */
@@ -592,3 +599,14 @@ body {
         text-align: center; /* Keep text centered */
     }
 }
+
+.btn-success, .btn-gold {
+    color: white;
+    background-color: #568203;
+}
+
+.btn-success:hover, .btn-gold:hover {
+    background-color: #466602; 
+    color: gold;
+}
+
