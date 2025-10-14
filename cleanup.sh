@@ -4,6 +4,7 @@
 # commit message and the branch then pushes to github
 find . -name "*.pyc" -delete
 find . -type d -name "__pycache__" -exec rm -r {} +
+echo ".pyc files removed and __pycache__ directories removed"
 
 
 #git add .

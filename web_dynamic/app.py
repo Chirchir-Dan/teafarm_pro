@@ -15,6 +15,10 @@ from os import getenv
 from urllib.parse import quote
 from datetime import timedelta
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = Flask(__name__, static_folder='../web_static')
 app.secret_key = secrets.token_hex(32)
