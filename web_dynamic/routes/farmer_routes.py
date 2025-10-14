@@ -36,6 +36,7 @@ from werkzeug.security import generate_password_hash
 from sqlalchemy import func
 from math import ceil
 from flask_paginate import Pagination, get_page_parameter
+from sqlalchemy import func
 
 farmer_bp = Blueprint('farmer_bp', __name__)
 
@@ -55,34 +56,32 @@ def dashboard():
     current_year = datetime.now().strftime('%Y')
 
     # Calculate total expenses
-    total_expenses = db.session.query(db.func.sum(Expense.amount)).filter(
-        db.func.date_format(Expense.date, '%Y,-%m') == current_month
+    total_expenses = db.session.query(func.coalesce(func.sum(Expense.amount), 0)).filter(
+        func.to_char(Expense.date, 'YYYY -MM') == current_month
     ).scalar() or 0
 
     # Calculate total tea produced
     total_tea_produced = db.session.query(
-        db.func.sum(
+        func.sum(
             ProductionRecord.weight)).filter(
-        db.func.date_format(
+        func.to_char(
             ProductionRecord.date,
-            '%Y-%m') == current_month).scalar() or 0
+            'YYYY-MM') == current_month).scalar() or 0
 
     # Total expenses for the current year
-    total_expenses_year = db.session.query(db.func.sum(Expense.amount)).filter(
-        db.func.date_format(Expense.date, '%Y') == current_year
+    total_expenses_year = db.session.query(func.coalesce(func.sum(Expense.amount),0)).filter(
+        func.to_char(Expense.date, 'YYYY-MM') == current_year
     ).scalar() or 0
 
     # Total tea produced for the current year
     total_tea_produced_year = db.session.query(
-        db.func.sum(
-            ProductionRecord.weight)).filter(
-        db.func.date_format(
-            ProductionRecord.date,
-            '%Y') == current_year).scalar() or 0
+        func.coalesce(func.sum(
+            ProductionRecord.weight), 0)).filter(
+                func.to_char(ProductionRecord.date, 'YYYY') == current_year).scalar() or 0
 
     # Calculate total inventory balance
     total_inventory_balance = db.session.query(
-        db.func.sum(Inventory.quantity)).scalar() or 0
+        func.coalesce(func.sum(Inventory.quantity), 0)).scalar() or 0
 
     return render_template(
         'farmer/farmer_dashboard.html',
