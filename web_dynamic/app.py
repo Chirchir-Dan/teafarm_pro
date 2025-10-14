@@ -23,12 +23,26 @@ load_dotenv()
 app = Flask(__name__, static_folder='../web_static')
 app.secret_key = secrets.token_hex(32)
 
-# Initialize SQLAlchemy
-password = quote(getenv("TEAFARM_MYSQL_PWD", ''))
-# app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://{user}:{password}@{host}/{database}'
+# ────────────────────────────────
+# DATABASE CONFIGURATION
+# ────────────────────────────────
+db_user = getenv("TEAFARM_DB_USER")
+db_password = quote(getenv("TEAFARM_DB_PWD", ""))
+db_host = getenv("TEAFARM_DB_HOST")
+db_name = getenv("TEAFARM_DB_NAME")
+
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    f"mysql+mysqldb://{getenv('TEAFARM_MYSQL_USER')}:{password}@{getenv('TEAFARM_MYSQL_HOST')}/{getenv('TEAFARM_MYSQL_DB')}"
+    f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}/{db_name}"
 )
+# app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://{user}:{password}@{host}/{database}'
+# app.config['SQLALCHEMY_DATABASE_URI'] = (
+#     f"mysql+mysqldb://{getenv('TEAFARM_MYSQL_USER')}:{password}@{getenv('TEAFARM_MYSQL_HOST')}/{getenv('TEAFARM_MYSQL_DB')}"
+# ) 
+# app.config['SQLALCHEMY_DATABASE_URI'] = postgresql://teafarm_user:dG7jLKoExYMnsYlx765D6Gg9pf9OAWyg@dpg-d3n5u83uibrs73bhj5hg-a.frankfurt-postgres.render.com/teafarm_db
+# app.config['SQLALCHEMY_DATABASE_URI'] = (
+#     f"postgresql://{getenv('TEAFARM_PG_USER')}:{password}@{getenv('TEAFARM_PG_HOST')}/{getenv('TEAFARM_PG_DB')}"
+# )
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 

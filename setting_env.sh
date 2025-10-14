@@ -39,13 +39,13 @@ echo "Database setup completed successfully!"
 export FLASK_APP="$PWD/web_dynamic/app.py"
 export PYTHONPATH="$PWD"
 
-export TEAFARM_MYSQL_USER="teafarm_dev"
-export TEAFARM_MYSQL_PWD="Te@farm2025!"
-export TEAFARM_MYSQL_HOST="localhost"
-export TEAFARM_MYSQL_DB="teafarm_dev_db"
+# export TEAFARM_MYSQL_USER="teafarm_dev"
+# export TEAFARM_MYSQL_PWD="Te@farm2025!"
+# export TEAFARM_MYSQL_HOST="localhost"
+# export TEAFARM_MYSQL_DB="teafarm_dev_db"
 
 # Sanity check for environment variables
-if [ -z "$FLASK_APP" ] || [ -z "$PYTHONPATH" ] || [ -z "$TEAFARM_MYSQL_USER" ]; then
+if [ -z "$FLASK_APP" ] || [ -z "$PYTHONPATH" ]; then
     echo "Environment variables not set correctly. Exiting."
     handle_error
 fi
